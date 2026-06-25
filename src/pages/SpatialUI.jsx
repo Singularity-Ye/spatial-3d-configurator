@@ -1159,22 +1159,40 @@ function Battery({ explode }) {
   );
 }
 
+// Helper to map Turbine part IDs to their initial local coordinates in the GLB
+const getTurbinePartLocalPos = (id) => {
+  switch (id) {
+    case '01': return [0, 1.25, 0.83];
+    case '02': return [0, 1.29, 0.38];
+    case '03': return [0, 1.17, 0.15];
+    case '04': return [0, 1.25, -0.2];
+    case '05': return [0, 0.75, -0.4];
+    case '06': return [0, 1.17, -0.6];
+    case '07': return [0, 0.67, -0.3];
+    case '08': return [0.25, 1.35, 0.85];
+    case '09': return [-0.15, 1.25, 0.05];
+    case '10': return [0, 0.45, -0.45];
+    case '11': return [0, 1.65, -0.85];
+    case '12': return [0.18, 0.55, -0.55];
+    default: return [0, 0, 0];
+  }
+};
+
 // Procedural high-fidelity Wind Turbine Model loaded from GLB
-function Turbine({ explode }) {
+function Turbine({ explode, turbineRef }) {
   const { scene } = useGLTF("/model/glb/turbine.glb");
-  const objRef = useRef();
 
   useFrame((state, delta) => {
-    if (!objRef.current) return;
+    if (!turbineRef.current) return;
     
     // Rotate the blades when not exploded or slowly when exploded
-    const blades = objRef.current.getObjectByName("defaultMaterial_45");
+    const blades = turbineRef.current.getObjectByName("defaultMaterial_45");
     if (blades) {
       blades.rotateY(delta * (1.2 * (1 - explode * 0.85))); // Rotates slower as it explodes
     }
 
     // Apply real-time explode translation along Z axis
-    const children = objRef.current.children;
+    const children = turbineRef.current.children;
     if (children && children.length > 0) {
       const length = children.length;
       const mid = (length - 1) / 2;
@@ -1199,7 +1217,7 @@ function Turbine({ explode }) {
         deep
         castShadow
         receiveShadow
-        ref={objRef}
+        ref={turbineRef}
         object={scene}
       />
     </group>
@@ -1223,8 +1241,17 @@ function SpatialScene({
 }) {
   const groupRef = useRef();
   const tickRingRef = useRef();
+  const turbineRef = useRef();
   const isPinchingRef = useRef(false);
   const prevCursorRef = useRef({ x: 0, y: 0 });
+
+  const [partMeshIndices, setPartMeshIndices] = useState({});
+  const mappingCalculated = useRef(false);
+
+  useEffect(() => {
+    mappingCalculated.current = false;
+    setPartMeshIndices({});
+  }, [activeModel]);
 
   const { cursor, handDetected, trackingMode, isPinching } = useHandTracking();
 
@@ -1232,6 +1259,33 @@ function SpatialScene({
     const { camera, controls } = state;
     const group = groupRef.current;
     if (!group) return;
+
+    // Dynamically calculate the mapping from turbine parts to closest child meshes on load
+    if (activeModel === 'turbine' && turbineRef.current && !mappingCalculated.current) {
+      const children = turbineRef.current.children;
+      if (children && children.length > 0) {
+        const mapping = {};
+        Object.entries(TURBINE_PARTS).forEach(([id, item]) => {
+          let closestChildIndex = -1;
+          let minDistance = Infinity;
+          const [lx, ly, lz] = getTurbinePartLocalPos(id);
+          const targetPos = new THREE.Vector3(lx, ly, lz);
+
+          children.forEach((child, index) => {
+            if (child.isMesh) {
+              const dist = child.position.distanceTo(targetPos);
+              if (dist < minDistance) {
+                minDistance = dist;
+                closestChildIndex = index;
+              }
+            }
+          });
+          mapping[id] = closestChildIndex;
+        });
+        setPartMeshIndices(mapping);
+        mappingCalculated.current = true;
+      }
+    }
 
     // Direct R3F raycaster pointer to the hand cursor coordinate if hand tracking is active
     if (trackingMode !== 'mouse' && handDetected) {
@@ -1471,12 +1525,29 @@ function SpatialScene({
         ) : activeModel === 'battery' ? (
           <Battery explode={explode} />
         ) : (
-          <Turbine explode={explode} />
+          <Turbine explode={explode} turbineRef={turbineRef} />
         )}
 
         {/* Render respective tag nodes */}
         {Object.entries(partsData).map(([id, item]) => {
-          const explodedPos = getExplodedPosition(id, item.pos);
+          let explodedPos = getExplodedPosition(id, item.pos);
+
+          // For the wind turbine, bind the tag position directly to the corresponding child mesh coordinate
+          if (activeModel === 'turbine' && turbineRef.current) {
+            const childIdx = partMeshIndices[id];
+            if (childIdx !== undefined && childIdx !== -1) {
+              const child = turbineRef.current.children[childIdx];
+              if (child) {
+                // Apply the scaling (1.2), position [0, -0.6, 0] and rotation [0, PI/2, 0] to the local child coordinates
+                explodedPos = [
+                  child.position.z * 1.2,
+                  child.position.y * 1.2 - 0.6,
+                  -child.position.x * 1.2
+                ];
+              }
+            }
+          }
+
           return (
             <TagNode
               key={id}
