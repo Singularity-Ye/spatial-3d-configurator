@@ -1498,11 +1498,20 @@ function SpatialScene({
             if (childIdx !== undefined && childIdx !== -1) {
               const child = turbineRef.current.children[childIdx];
               if (child) {
-                // Apply the scaling (1.2), position [0, -0.6, 0] and rotation [0, PI/2, 0] to the local child coordinates
+                // Compute geometry bounding box center dynamically
+                if (!child.geometry.boundingBox) {
+                  child.geometry.computeBoundingBox();
+                }
+                const center = new THREE.Vector3();
+                child.geometry.boundingBox.getCenter(center);
+                // Apply the child's local transformation matrix
+                center.applyMatrix4(child.matrix);
+
+                // Apply the scaling (1.2), position [0, -0.6, 0] and rotation [0, PI/2, 0] of the parent group
                 explodedPos = [
-                  child.position.z * 1.2,
-                  child.position.y * 1.2 - 0.6,
-                  -child.position.x * 1.2
+                  center.z * 1.2,
+                  center.y * 1.2 - 0.6,
+                  -center.x * 1.2
                 ];
               }
             }
