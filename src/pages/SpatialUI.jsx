@@ -336,18 +336,16 @@ const EdgeTab = styled.button`
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  ${props => props.$left ? `left: ${props.$collapsed ? '0.5rem' : '305px'};` : `right: ${props.$collapsed ? '0.5rem' : '305px'};`}
-  background: rgba(255, 255, 255, 0.85);
+  ${props => props.$left ? `left: ${props.$collapsed ? '0' : '305px'}; border-radius: 0 8px 8px 0;` : `right: ${props.$collapsed ? '0' : '305px'}; border-radius: 8px 0 0 8px;`}
+  background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(0, 0, 0, 0.08);
+  ${props => props.$left ? 'border-left: none;' : 'border-right: none;'}
   color: #475569;
   font-family: 'Outfit', sans-serif;
-  font-size: 0.6rem;
+  font-size: 0.65rem;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  padding: 1.1rem 0.35rem;
-  border-radius: 4px;
+  padding: 1.2rem 0.4rem;
   writing-mode: vertical-lr;
   cursor: pointer;
   z-index: 10;
@@ -399,6 +397,136 @@ const DetailTooltip = styled.div`
     font-size: 0.68rem;
     color: #334155;
     line-height: 1.5;
+  }
+`;
+
+const ToggleSwitch = styled.label`
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+  
+  input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  
+  span {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #cbd5e1;
+    transition: .3s;
+    border-radius: 20px;
+  }
+  
+  span:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+  }
+  
+  input:checked + span {
+    background-color: #2563eb;
+  }
+  
+  input:checked + span:before {
+    transform: translateX(16px);
+  }
+`;
+
+const SpecTable = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+  font-size: 0.7rem;
+`;
+
+const SpecRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.25rem 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  
+  .label {
+    color: #64748b;
+  }
+  
+  .val {
+    color: #0f172a;
+    font-weight: 500;
+  }
+`;
+
+const SearchInput = styled.div`
+  display: flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 6px;
+  padding: 0.4rem 0.6rem;
+  gap: 0.4rem;
+  
+  input {
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 0.7rem;
+    color: #1e293b;
+    width: 100%;
+    
+    &::placeholder {
+      color: #94a3b8;
+    }
+  }
+`;
+
+const PartThumbnail = styled.div`
+  width: 100%;
+  height: 80px;
+  background: rgba(0, 0, 0, 0.01);
+  border: 1px dashed rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: #94a3b8;
+  margin: 0.2rem 0;
+`;
+
+const HeaderButton = styled.button`
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+  border-radius: 6px;
+  color: #334155;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #f8fafc;
+    border-color: rgba(0, 0, 0, 0.15);
+    color: #0f172a;
+    box-shadow: 0 2px 4px rgba(15, 23, 42, 0.05);
   }
 `;
 
@@ -1809,6 +1937,10 @@ export default function SpatialUI() {
   const [meshList, setMeshList] = useState([]);
   const [partMeshIndices, setPartMeshIndices] = useState({});
 
+  // Selected search and interaction mode states
+  const [searchTerm, setSearchTerm] = useState('');
+  const [cursorMode, setCursorMode] = useState('orbit'); // 'orbit', 'pan', 'zoom', 'select'
+
   // Hook states
   const {
     trackingMode,
@@ -1836,6 +1968,10 @@ export default function SpatialUI() {
   const partsData = activeModel === 'fridge' 
     ? FRIDGE_PARTS 
     : (activeModel === 'battery' ? BATTERY_PARTS : customTurbineParts);
+
+  const filteredParts = Object.entries(partsData).filter(([id, item]) => 
+    item.name.toLowerCase().includes(searchTerm.toLowerCase()) || id.includes(searchTerm)
+  );
 
   const selectedPart = partsData[selectedPartId] || Object.values(partsData)[0];
   const activePart = hoveredPartId ? partsData[hoveredPartId] : selectedPart;
@@ -1868,13 +2004,20 @@ export default function SpatialUI() {
   return (
     <PageContainer>
       <Header>
-        <div className="logo-section" onClick={() => navigate('/')}>
-          <span className="icon">⚙️</span>
-          <h1>3D 零件拆解沙盒 · 产品配置器</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <button className="nav-back" onClick={handleBack}>
+            ❮ 返回
+          </button>
+          <div className="logo-section" onClick={() => navigate('/')}>
+            <span className="icon">⚙️</span>
+            <h1>3D 产品配置器</h1>
+          </div>
         </div>
-        <button className="nav-back" onClick={handleBack}>
-          返回造物坊
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+          <HeaderButton onClick={() => setCameraPreset('home')}>
+            🔄 重置视角
+          </HeaderButton>
+        </div>
       </Header>
 
       <MainContent>
@@ -1890,7 +2033,7 @@ export default function SpatialUI() {
             }
           }}
         >
-          {leftCollapsed ? '展开控制面板 ▶' : '◀ 收起控制面板'}
+          {leftCollapsed ? '🗂️ 零件 ❯' : '❮ 收起'}
         </EdgeTab>
         
         <EdgeTab
@@ -1903,7 +2046,7 @@ export default function SpatialUI() {
             }
           }}
         >
-          {rightCollapsed ? '◀ 展开参数配置' : '收起参数配置 ▶'}
+          {rightCollapsed ? '⚙️ 图层 ❮' : '收起 ❯'}
         </EdgeTab>
 
         {/* Left Side: Telemetry Control Panel */}
@@ -1974,63 +2117,96 @@ export default function SpatialUI() {
 
           <HudCard>
             <h3>追踪状态</h3>
-            <div style={{ display: 'flex', alignItems: 'center', justifycontent: 'space-between', marginTop: '0.3rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.7rem' }}>
-                <span style={{
-                  display: 'inline-block',
-                  width: '6px',
-                  height: '6px',
-                  borderRadius: '50%',
-                  background: handDetected ? '#16a34a' : '#dc2626',
-                }} />
-                <span style={{ color: '#475569', fontFamily: 'JetBrains Mono, monospace', fontWeight: '600' }}>
-                  {handDetected ? '在线' : '离线'}
-                </span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', marginTop: '0.4rem', fontSize: '0.72rem', color: '#475569' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', background: '#16a34a' }} />
+                  <span>鼠标追踪</span>
+                </div>
+                <span style={{ color: '#16a34a', fontWeight: '600' }}>在线</span>
               </div>
-              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', color: '#2563eb', fontWeight: '700' }}>
-                置信度: {handDetected ? '98.4%' : '0.0%'}
-              </span>
-            </div>
-            <div className="progress-bar-container">
-              <div className="progress-bar-fill" style={{ width: handDetected ? '98.4%' : '0%', transition: 'width 0.3s ease' }} />
+              
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', background: '#16a34a' }} />
+                  <span>模型加载</span>
+                </div>
+                <span style={{ color: '#16a34a', fontWeight: '600' }}>正常</span>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', background: '#16a34a' }} />
+                  <span>数据同步</span>
+                </div>
+                <span style={{ color: '#16a34a', fontWeight: '600' }}>正常</span>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', background: '#2563eb' }} />
+                  <span>拆解模式</span>
+                </div>
+                <span style={{ color: '#2563eb', fontWeight: '600' }}>激活</span>
+              </div>
             </div>
           </HudCard>
 
           <HudCard>
             <h3>指针数据</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.2rem', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: '#475569', marginTop: '0.2rem' }}>
-              <div>X轴: <span style={{ color: '#1e293b', fontWeight: '600' }}>{cursor.x.toFixed(3)}</span></div>
-              <div>Y轴: <span style={{ color: '#1e293b', fontWeight: '600' }}>{cursor.y.toFixed(3)}</span></div>
-              <div>Z轴: <span style={{ color: '#1e293b', fontWeight: '600' }}>{isPinching ? '0.214' : '0.000'}</span></div>
-            </div>
-            <div style={{ marginTop: '0.5rem' }}>
-              <svg width="100%" height="60" style={{ background: 'rgba(0,0,0,0.02)', borderRadius: '6px', border: '1px solid rgba(0,0,0,0.06)' }}>
-                <defs>
-                  <pattern id="pointer-grid" width="10" height="10" patternUnits="userSpaceOnUse">
-                    <path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(0,0,0,0.04)" strokeWidth="0.8" />
-                  </pattern>
-                </defs>
-                <rect width="100%" height="100%" fill="url(#pointer-grid)" />
-                <line x1="50%" y1="0" x2="50%" y2="100%" stroke="rgba(0,0,0,0.06)" strokeWidth="0.5" strokeDasharray="2,2" />
-                <line x1="0" y1="50%" x2="100%" y2="50%" stroke="rgba(0,0,0,0.06)" strokeWidth="0.5" strokeDasharray="2,2" />
-                <circle cx={`${50 + cursor.x * 50}%`} cy={`${50 - cursor.y * 50}%`} r="3.5" fill="#2563eb" style={{ filter: 'drop-shadow(0 0 2px rgba(37,99,235,0.4))', transition: 'cx 0.05s, cy 0.05s' }} />
-              </svg>
-            </div>
+            <SpecTable>
+              <SpecRow>
+                <span className="label">模式</span>
+                <span className="val">鼠标</span>
+              </SpecRow>
+              <SpecRow>
+                <span className="label">状态</span>
+                <span className="val" style={{ color: '#16a34a', fontWeight: '600' }}>在线</span>
+              </SpecRow>
+              <SpecRow>
+                <span className="label">X轴坐标</span>
+                <span className="val">{cursor.x.toFixed(3)} m</span>
+              </SpecRow>
+              <SpecRow>
+                <span className="label">Y轴坐标</span>
+                <span className="val">{cursor.y.toFixed(3)} m</span>
+              </SpecRow>
+              <SpecRow>
+                <span className="label">Z轴坐标</span>
+                <span className="val">{isPinching ? '0.214' : '0.000'} m</span>
+              </SpecRow>
+              <SpecRow>
+                <span className="label">当前目标</span>
+                <span className="val" style={{ fontSize: '0.62rem', maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={activePart ? activePart.name : '未选定'}>
+                  {activePart ? activePart.name : '无'}
+                </span>
+              </SpecRow>
+            </SpecTable>
           </HudCard>
 
           <HudCard>
             <h3>性能诊断</h3>
-            <div className="sparkline-row" style={{ marginTop: '0.2rem' }}>
-              <span>帧率 (FPS): <span style={{ color: '#1e293b', fontWeight: '600' }}>59.8</span></span>
-              <Sparkline color="#16a34a" points={[15, 18, 17, 16, 20, 19, 21, 20, 18, 20]} />
-            </div>
-            <div className="sparkline-row">
-              <span>延时: <span style={{ color: '#1e293b', fontWeight: '600' }}>11ms</span></span>
-              <Sparkline color="#d97706" points={[10, 8, 12, 11, 15, 12, 10, 9, 11, 8]} />
-            </div>
-            <div className="sparkline-row">
-              <span>追踪质量: <span style={{ color: '#1e293b', fontWeight: '600' }}>99.2%</span></span>
-              <Sparkline color="#2563eb" points={[5, 12, 18, 15, 8, 22, 14, 18, 10, 15]} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginTop: '0.3rem' }}>
+              <div className="sparkline-row">
+                <span>帧率: <span style={{ color: '#0f172a', fontWeight: '600' }}>59.8 FPS</span></span>
+                <Sparkline color="#16a34a" points={[15, 18, 17, 16, 20, 19, 21, 20, 18, 20]} />
+              </div>
+              <div className="sparkline-row">
+                <span>渲染时间: <span style={{ color: '#0f172a', fontWeight: '600' }}>16.7 ms</span></span>
+                <Sparkline color="#16a34a" points={[10, 8, 12, 11, 15, 12, 10, 9, 11, 8]} />
+              </div>
+              <div className="sparkline-row">
+                <span>CPU 占用: <span style={{ color: '#0f172a', fontWeight: '600' }}>12%</span></span>
+                <Sparkline color="#2563eb" points={[5, 12, 18, 15, 8, 22, 14, 18, 10, 15]} />
+              </div>
+              <div className="sparkline-row">
+                <span>GPU 占用: <span style={{ color: '#0f172a', fontWeight: '600' }}>18%</span></span>
+                <Sparkline color="#2563eb" points={[12, 15, 13, 17, 14, 18, 15, 16, 17, 18]} />
+              </div>
+              <div className="sparkline-row">
+                <span>内存占用: <span style={{ color: '#0f172a', fontWeight: '600' }}>1.2 GB</span></span>
+                <Sparkline color="#2563eb" points={[10, 10, 11, 11, 11, 12, 12, 12, 12, 12]} />
+              </div>
             </div>
           </HudCard>
         </Sidebar>
@@ -2074,8 +2250,9 @@ export default function SpatialUI() {
                   onModelLoaded={setMeshList}
                 />
                 <OrbitControls
-                  enableZoom={true}
-                  enablePan={false}
+                  enableZoom={cursorMode === 'zoom' || cursorMode === 'orbit'}
+                  enablePan={cursorMode === 'pan'}
+                  enableRotate={cursorMode === 'orbit'}
                   maxDistance={8}
                   minDistance={2}
                   enabled={!handDetected}
@@ -2088,37 +2265,38 @@ export default function SpatialUI() {
 
           {/* Floating Camera Control Dock */}
           <BottomDock>
-            <span className="label">视角控制</span>
-            <div className="divider" />
-            
             <div className="dock-section">
-              <button onClick={() => setFov(prev => Math.min(85, prev + 3))} title="拉远视角 (➖)">
-                ➖
-              </button>
-              <span className="zoom-display">
-                {Math.round((48 / fov) * 100)}%
-              </span>
-              <button onClick={() => setFov(prev => Math.max(15, prev - 3))} title="拉近视角 (➕)">
-                ➕
-              </button>
+              <span className="label" style={{ marginRight: '0.2rem' }}>视距</span>
+              <div className="zoom-control">
+                <button onClick={() => setFov(prev => Math.min(85, prev + 3))} title="拉远视角">
+                  ➖
+                </button>
+                <span className="zoom-display">
+                  {Math.round((48 / fov) * 100)}%
+                </span>
+                <button onClick={() => setFov(prev => Math.max(15, prev - 3))} title="拉近视角">
+                  ➕
+                </button>
+              </div>
             </div>
             
             <div className="divider" />
             
-            <div className="dock-section">
+            <div className="dock-section presets-group">
               {[
-                { id: 'home', label: '重置' },
-                { id: 'front', label: '前视' },
-                { id: 'side', label: '侧视' },
-                { id: 'top', label: '俯视' },
-                { id: 'iso', label: '等轴' }
-              ].map(view => (
+                { id: 'orbit', label: '旋转', icon: '🔄' },
+                { id: 'pan', label: '平移', icon: '✋' },
+                { id: 'zoom', label: '缩放', icon: '🔍' },
+                { id: 'select', label: '选择', icon: '🎯' }
+              ].map(mode => (
                 <button
-                  key={view.id}
-                  className={cameraPreset === view.id ? 'active' : ''}
-                  onClick={() => setCameraPreset(view.id)}
+                  key={mode.id}
+                  className={cursorMode === mode.id ? 'active' : ''}
+                  onClick={() => setCursorMode(mode.id)}
+                  title={`${mode.label}模式`}
                 >
-                  {view.label}
+                  <span>{mode.icon}</span>
+                  <span>{mode.label}</span>
                 </button>
               ))}
             </div>
@@ -2126,7 +2304,7 @@ export default function SpatialUI() {
             <div className="divider" />
             
             <div className="dock-section explode-control">
-              <span style={{ color: '#8fa3b5', fontWeight: 600 }}>拆解系数</span>
+              <span style={{ color: '#475569', fontWeight: 600 }}>拆解</span>
               <input
                 type="range"
                 min="0"
@@ -2135,20 +2313,24 @@ export default function SpatialUI() {
                 value={explodeAmount}
                 onChange={(e) => setExplodeAmount(parseFloat(e.target.value))}
               />
-              <span style={{ fontFamily: 'JetBrains Mono', color: '#2563eb', minWidth: '32px' }}>
+              <span style={{ fontFamily: 'JetBrains Mono', color: '#2563eb', fontWeight: '700', minWidth: '32px' }}>
                 {Math.round(explodeAmount * 100)}%
               </span>
             </div>
             
             <div className="divider" />
             
-            <button
-              className={autoRotate ? 'active' : ''}
-              onClick={() => setAutoRotate(prev => !prev)}
-              title="切换自动旋转"
-            >
-              🔄 自动旋转
-            </button>
+            <div className="dock-section rotate-toggle">
+              <span>自动旋转</span>
+              <ToggleSwitch>
+                <input 
+                  type="checkbox" 
+                  checked={autoRotate} 
+                  onChange={() => setAutoRotate(prev => !prev)} 
+                />
+                <span />
+              </ToggleSwitch>
+            </div>
             
             <div className="divider" />
             
@@ -2163,9 +2345,19 @@ export default function SpatialUI() {
                 });
               }}
               style={{
-                background: focusMode ? 'rgba(239, 68, 68, 0.08)' : 'transparent',
-                borderColor: focusMode ? 'rgba(239, 68, 68, 0.25)' : 'transparent',
-                color: focusMode ? '#ef4444' : '#475569'
+                background: focusMode ? 'rgba(37, 99, 235, 0.08)' : 'transparent',
+                border: '1px solid transparent',
+                borderColor: focusMode ? 'rgba(37, 99, 235, 0.2)' : 'transparent',
+                color: focusMode ? '#2563eb' : '#475569',
+                borderRadius: '20px',
+                padding: '0.35rem 0.7rem',
+                fontSize: '0.72rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.25rem',
+                transition: 'all 0.2s'
               }}
             >
               🎯 {focusMode ? '退出观察' : '沉浸观察'}
@@ -2187,7 +2379,7 @@ export default function SpatialUI() {
                 <button 
                   onClick={() => setConfigMode(false)}
                   style={{
-                    background: 'rgba(239, 68, 68, 0.1)',
+                    background: 'rgba(239, 68, 68, 0.08)',
                     border: '1px solid rgba(239, 68, 68, 0.25)',
                     color: '#ef4444',
                     fontSize: '0.6rem',
@@ -2196,8 +2388,8 @@ export default function SpatialUI() {
                     cursor: 'pointer',
                     transition: 'all 0.2s'
                   }}
-                  onMouseEnter={(e) => { e.target.style.background = 'rgba(239, 68, 68, 0.18)' }}
-                  onMouseLeave={(e) => { e.target.style.background = 'rgba(239, 68, 68, 0.1)' }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.12)' }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.08)' }}
                 >
                   退出配置
                 </button>
@@ -2448,8 +2640,8 @@ export default function SpatialUI() {
                       marginTop: '0.2rem',
                       transition: 'all 0.2s'
                     }}
-                    onMouseEnter={(e) => { e.target.style.transform = 'translateY(-1px)'; e.target.style.boxShadow = '0 6px 14px rgba(37, 99, 235, 0.3)' }}
-                    onMouseLeave={(e) => { e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = '0 4px 12px rgba(37, 99, 235, 0.2)' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 14px rgba(37, 99, 235, 0.3)' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(37, 99, 235, 0.2)' }}
                   >
                     💾 导出并复制代码
                   </button>
@@ -2475,8 +2667,8 @@ export default function SpatialUI() {
                         fontWeight: 600,
                         transition: 'all 0.2s'
                       }}
-                      onMouseEnter={(e) => { e.target.style.background = 'rgba(37, 99, 235, 0.15)' }}
-                      onMouseLeave={(e) => { e.target.style.background = 'rgba(37, 99, 235, 0.08)' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(37, 99, 235, 0.15)' }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(37, 99, 235, 0.08)' }}
                     >
                       🔧 标签配置
                     </button>
@@ -2510,12 +2702,24 @@ export default function SpatialUI() {
 
               <HudCard>
                 <h3>零件浏览器</h3>
-                <div style={{ maxHeight: '180px', overflowY: 'auto', paddingRight: '4px', scrollbarWidth: 'thin' }}>
-                  <TreeContainer>
-                    {Object.entries(partsData).map(([id, item]) => (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.2rem' }}>
+                  <SearchInput>
+                    <span>🔍</span>
+                    <input 
+                      type="text" 
+                      placeholder="搜索零件..." 
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </SearchInput>
+                  
+                  <TreeContainer style={{ maxHeight: '180px', overflowY: 'auto', scrollbarWidth: 'thin' }}>
+                    {filteredParts.map(([id, item]) => (
                       <TreeItem
                         key={id}
                         $active={selectedPartId === id}
+                        onMouseEnter={() => setHoveredPartId(id)}
+                        onMouseLeave={() => setHoveredPartId(null)}
                         onClick={() => setSelectedPartId(id)}
                       >
                         <span style={{ color: selectedPartId === id ? '#2563eb' : '#64748b' }}>{id}</span>
