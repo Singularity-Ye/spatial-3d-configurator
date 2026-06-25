@@ -488,7 +488,7 @@ export function HandTrackingProvider({ children }) {
           locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
         });
         hands.setOptions({
-          maxNumHands: 1,
+          maxNumHands: 2,
           modelComplexity: 1, // Changed back to Full for maximum fingertip tracking precision
           minDetectionConfidence: 0.6,
           minTrackingConfidence: 0.6,
