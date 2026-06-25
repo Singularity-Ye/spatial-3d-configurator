@@ -1065,7 +1065,15 @@ const TURBINE_PARTS = {
 };
 
 // Static coordinates for selected leader line [0, 0, 0] to [0.2, 0.18, 0] to prevent memory churn
+// Static coordinates for selected leader line [0, 0, 0] to [0.2, 0.18, 0] to prevent memory churn
 const LEADER_LINE_ARRAY = new Float32Array([0, 0, 0, 0.2, 0.18, 0]);
+
+// Pre-allocated static geometries for TagNode to eliminate memory leaks and GC overhead
+const tagSphereGeometry = new THREE.SphereGeometry(0.045, 16, 16);
+const tagTriggerGeometry = new THREE.SphereGeometry(0.28, 12, 12);
+const tagRingGeometry = new THREE.RingGeometry(0.065, 0.085, 16);
+const leaderLineGeometry = new THREE.BufferGeometry();
+leaderLineGeometry.setAttribute('position', new THREE.BufferAttribute(LEADER_LINE_ARRAY, 3));
 
 // 3D Tag and Hotspot Node Component (renders inside R3F)
 function TagNode({ partId, name, position, isSelected, isHovered, onSelect, onHover, explode, desc, partCode, isActiveMode = true }) {
@@ -1087,13 +1095,13 @@ function TagNode({ partId, name, position, isSelected, isHovered, onSelect, onHo
   return (
     <group position={position}>
       {/* Visual Hotspot sphere */}
-      <mesh>
-        <sphereGeometry args={[0.045, 16, 16]} />
+      <mesh geometry={tagSphereGeometry}>
         <meshBasicMaterial color={isSelected ? '#ffffff' : '#3b82f6'} transparent opacity={tagOpacity} />
       </mesh>
 
       {/* Large Invisible Hit Target Sphere (low-poly proxy collider for easy hover & click) */}
       <mesh
+        geometry={tagTriggerGeometry}
         onClick={tagOpacity >= 0.15 && isActiveMode ? (e) => {
           e.stopPropagation();
           onSelect();
@@ -1107,13 +1115,11 @@ function TagNode({ partId, name, position, isSelected, isHovered, onSelect, onHo
           onHover(null);
         } : undefined}
       >
-        <sphereGeometry args={[0.28, 12, 12]} />
         <meshBasicMaterial transparent opacity={0} depthWrite={false} />
       </mesh>
 
       {/* Pulsing wireframe circle */}
-      <mesh ref={meshRef}>
-        <ringGeometry args={[0.065, 0.085, 16]} />
+      <mesh ref={meshRef} geometry={tagRingGeometry}>
         <meshBasicMaterial
           color={isSelected ? '#ffffff' : '#3b82f6'}
           side={THREE.DoubleSide}
@@ -1124,15 +1130,7 @@ function TagNode({ partId, name, position, isSelected, isHovered, onSelect, onHo
 
       {/* Floating Leader Line */}
       {isSelected && (
-        <line>
-          <bufferGeometry attach="geometry">
-            <bufferAttribute
-              attach="attributes-position"
-              count={2}
-              array={LEADER_LINE_ARRAY}
-              itemSize={3}
-            />
-          </bufferGeometry>
+        <line geometry={leaderLineGeometry}>
           <lineBasicMaterial attach="material" color="#3b82f6" transparent opacity={0.5} />
         </line>
       )}

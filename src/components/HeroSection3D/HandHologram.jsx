@@ -15,11 +15,34 @@ const FINGER_CONNECTIONS = {
 // Check if safe gesture test mode is enabled via URL search parameter
 const isSafeMode = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('safeGesture') === '1';
 
+// Pre-allocated static sphere geometries to prevent memory leaks and GC churn
+const tipGeometry = new THREE.SphereGeometry(0.055, 12, 12);
+const jointGeometry = new THREE.SphereGeometry(0.038, 12, 12);
+
 function SingleHandHologram({ handLandmarks, isPinching, visible }) {
   const groupRef = useRef();
   const jointsRef = useRef([]);
   const linesRef = useRef({});
   const smoothedRef = useRef([]);
+
+  // Pre-allocated line geometries computed once on mount
+  const lineGeometries = useMemo(() => {
+    const geos = {};
+    Object.entries(FINGER_CONNECTIONS).forEach(([fingerName, indices]) => {
+      const geo = new THREE.BufferGeometry();
+      const positions = new Float32Array(indices.length * 3);
+      geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      geos[fingerName] = geo;
+    });
+    return geos;
+  }, []);
+
+  // Dispose line geometries on unmount to prevent GPU resource leaks
+  useEffect(() => {
+    return () => {
+      Object.values(lineGeometries).forEach(geo => geo.dispose());
+    };
+  }, [lineGeometries]);
 
   // Map raw landmarks to target THREE.Vector3 coordinates in the 3D space
   const targets = useMemo(() => {
@@ -124,15 +147,11 @@ function SingleHandHologram({ handLandmarks, isPinching, visible }) {
     <group ref={groupRef} visible={false}>
       {/* 1. Finger connection lines (rendered once, coordinates updated in useFrame) - Skip in safe mode */}
       {!isSafeMode && Object.keys(FINGER_CONNECTIONS).map((fingerName) => (
-        <line key={fingerName} ref={(el) => { if (el) linesRef.current[fingerName] = el; }}>
-          <bufferGeometry attach="geometry">
-            <bufferAttribute
-              attach="attributes-position"
-              count={FINGER_CONNECTIONS[fingerName].length}
-              array={new Float32Array(FINGER_CONNECTIONS[fingerName].length * 3)}
-              itemSize={3}
-            />
-          </bufferGeometry>
+        <line
+          key={fingerName}
+          ref={(el) => { if (el) linesRef.current[fingerName] = el; }}
+          geometry={lineGeometries[fingerName]}
+        >
           <lineBasicMaterial
             attach="material"
             transparent
@@ -149,11 +168,14 @@ function SingleHandHologram({ handLandmarks, isPinching, visible }) {
         if (isSafeMode && idx !== 8) return null;
 
         const isTip = idx === 4 || idx === 8;
-        const size = isTip ? 0.055 : 0.038;
 
         return (
-          <mesh key={idx} ref={(el) => { if (el) jointsRef.current[idx] = el; }} depthTest={false}>
-            <sphereGeometry args={[size, 12, 12]} />
+          <mesh
+            key={idx}
+            ref={(el) => { if (el) jointsRef.current[idx] = el; }}
+            depthTest={false}
+            geometry={isTip ? tipGeometry : jointGeometry}
+          >
             <meshBasicMaterial
               transparent
               opacity={0.9}
