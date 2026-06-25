@@ -1567,7 +1567,7 @@ function SpatialScene({
       if (prevHandsVertDistRef.current !== null && prevHandsVertDistRef.current > 0) {
         const delta = twoHandsVerticalDistance - prevHandsVertDistRef.current;
         if (Math.abs(delta) > 0.01) {
-          setExplodeAmount(prev => Math.max(0, Math.min(1, prev + delta * 1.5)));
+          setExplode(prev => Math.max(0, Math.min(1, prev + delta * 1.5)));
         }
       }
       prevHandsVertDistRef.current = twoHandsVerticalDistance;
@@ -1600,7 +1600,7 @@ function SpatialScene({
       setSelectedPartId(null);
       setFocusMode(false);
       setHoveredPartId(null);
-      setExplodeAmount(0);
+      setExplode(0);
     }
   }, [isPalm, handDetected, trackingMode]);
 
@@ -1614,7 +1614,7 @@ function SpatialScene({
         if (elapsed >= 800) {
           setFov(48);
           setCameraPreset('home');
-          setExplodeAmount(0);
+          setExplode(0);
           setSelectedPartId(null);
           setHoveredPartId(null);
           setFocusMode(false);
