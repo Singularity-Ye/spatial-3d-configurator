@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import * as THREE from 'three';
 import { useHandTracking, TRACKING_MODES } from '../utils/useHandTracking';
 import ErrorBoundary from '../components/ErrorBoundary';
+import HandHologram from '../components/HeroSection3D/HandHologram';
 
 const PageContainer = styled.div`
   min-height: 100vh;
@@ -916,6 +917,9 @@ const TURBINE_PARTS = {
   }
 };
 
+// Static coordinates for selected leader line [0, 0, 0] to [0.2, 0.18, 0] to prevent memory churn
+const LEADER_LINE_ARRAY = new Float32Array([0, 0, 0, 0.2, 0.18, 0]);
+
 // 3D Tag and Hotspot Node Component (renders inside R3F)
 function TagNode({ partId, name, position, isSelected, isHovered, onSelect, onHover, explode, desc, partCode, isActiveMode = true }) {
   const meshRef = useRef();
@@ -978,7 +982,7 @@ function TagNode({ partId, name, position, isSelected, isHovered, onSelect, onHo
             <bufferAttribute
               attach="attributes-position"
               count={2}
-              array={new Float32Array([0, 0, 0, labelOffset[0], labelOffset[1], labelOffset[2]])}
+              array={LEADER_LINE_ARRAY}
               itemSize={3}
             />
           </bufferGeometry>
@@ -2448,6 +2452,7 @@ export default function SpatialUI() {
                   onModelLoaded={setMeshList}
                   cursorMode={cursorMode}
                 />
+                <HandHologram />
                 <OrbitControls
                   enableZoom={cursorMode === 'zoom' || cursorMode === 'orbit'}
                   enablePan={cursorMode === 'pan'}
