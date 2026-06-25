@@ -75,6 +75,16 @@ const calculateRotation = (lm) => {
 
 export function HandTrackingProvider({ children }) {
   const [trackingMode, setTrackingMode] = useState(TRACKING_MODES.MOUSE);
+
+  const safeSetTrackingMode = useCallback((mode) => {
+    if (typeof window !== 'undefined' && window.__PAUSE_HAND_TRACKING__) {
+      if (mode !== TRACKING_MODES.MOUSE) {
+        console.warn('[Hand Tracking] Blocked mode switch: Watchdog protection mode (熔断) is active.');
+        return;
+      }
+    }
+    setTrackingMode(mode);
+  }, []);
   const [handDetected, setHandDetected] = useState(false);
   const [cursor, setCursor] = useState({ x: 0, y: 0 }); // Screen NDC coords: [-1, 1]
   const [isPinching, setIsPinching] = useState(false);
@@ -104,6 +114,8 @@ export function HandTrackingProvider({ children }) {
   const simulationIntervalRef = useRef(null);
   const activeModeRef = useRef(trackingMode);
   const activeInitIdRef = useRef(0);
+  const lastResultsTimeRef = useRef(0);
+  const handFpsRef = useRef(0);
 
   // Gesture state debouncing tracking
   const pinchActiveRef = useRef(false);
@@ -222,6 +234,10 @@ export function HandTrackingProvider({ children }) {
     // Invalidate any ongoing camera initializations
     activeInitIdRef.current++;
 
+    if (typeof window !== 'undefined') {
+      window.__HAND_TRACKING_FPS__ = 0;
+    }
+
     // 1. Stop simulation
     if (simulationIntervalRef.current) {
       clearInterval(simulationIntervalRef.current);
@@ -280,6 +296,27 @@ export function HandTrackingProvider({ children }) {
   // Process MediaPipe results
   const onResults = useCallback((results) => {
     if (activeModeRef.current !== TRACKING_MODES.CAMERA) return;
+
+    if (typeof window !== 'undefined' && window.__PAUSE_HAND_TRACKING__) {
+      setHandDetected(false);
+      setLandmarks([]);
+      setTwoHandsDetected(false);
+      return;
+    }
+
+    // Calculate Hand FPS
+    const now = Date.now();
+    if (lastResultsTimeRef.current > 0) {
+      const delta = now - lastResultsTimeRef.current;
+      if (delta > 0) {
+        const fps = 1000 / delta;
+        handFpsRef.current = handFpsRef.current * 0.95 + fps * 0.05;
+        if (typeof window !== 'undefined') {
+          window.__HAND_TRACKING_FPS__ = Math.round(handFpsRef.current);
+        }
+      }
+    }
+    lastResultsTimeRef.current = now;
 
     const canvas = canvasRefInternal.current;
     const ctx = canvas ? canvas.getContext('2d') : null;
@@ -551,6 +588,27 @@ export function HandTrackingProvider({ children }) {
 
       socket.onmessage = (event) => {
         if (activeModeRef.current !== TRACKING_MODES.WEBSOCKET) return;
+        if (typeof window !== 'undefined' && window.__PAUSE_HAND_TRACKING__) {
+          setHandDetected(false);
+          setLandmarks([]);
+          setTwoHandsDetected(false);
+          return;
+        }
+
+        // Calculate Hand FPS
+        const now = Date.now();
+        if (lastResultsTimeRef.current > 0) {
+          const delta = now - lastResultsTimeRef.current;
+          if (delta > 0) {
+            const fps = 1000 / delta;
+            handFpsRef.current = handFpsRef.current * 0.95 + fps * 0.05;
+            if (typeof window !== 'undefined') {
+              window.__HAND_TRACKING_FPS__ = Math.round(handFpsRef.current);
+            }
+          }
+        }
+        lastResultsTimeRef.current = now;
+
         try {
           const data = JSON.parse(event.data);
           
@@ -609,6 +667,15 @@ export function HandTrackingProvider({ children }) {
 
     let angle = 0;
     simulationIntervalRef.current = setInterval(() => {
+      if (typeof window !== 'undefined' && window.__PAUSE_HAND_TRACKING__) {
+        setHandDetected(false);
+        setLandmarks([]);
+        setTwoHandsDetected(false);
+        return;
+      }
+      if (typeof window !== 'undefined') {
+        window.__HAND_TRACKING_FPS__ = 30;
+      }
       angle += 0.04;
       
       // Mapped hand landmarks simulation
@@ -705,7 +772,7 @@ export function HandTrackingProvider({ children }) {
     <HandTrackingContext.Provider
       value={{
         trackingMode,
-        setTrackingMode,
+        setTrackingMode: safeSetTrackingMode,
         handDetected,
         cursor,
         setCursor, // Expose for mouse emulation

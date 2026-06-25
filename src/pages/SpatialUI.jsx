@@ -1525,6 +1525,8 @@ function SpatialScene({
 
   const mappingCalculated = useRef(false);
   const turbineMeshCentersRef = useRef({});
+  const lastFrameTimeRef = useRef(performance.now());
+  const smoothFpsRef = useRef(60);
 
   // Performance caches for THREE.Vector3 to prevent high-frequency GC allocations
   const cacheVec3_targetCenter = useRef(new THREE.Vector3(0, 0, 0));
@@ -1602,6 +1604,29 @@ function SpatialScene({
     const { camera, controls } = state;
     const group = groupRef.current;
     if (!group) return;
+
+    // Calculate App FPS
+    const nowFrame = performance.now();
+    const deltaMs = nowFrame - lastFrameTimeRef.current;
+    lastFrameTimeRef.current = nowFrame;
+    if (deltaMs > 0) {
+      const currentFps = 1000 / deltaMs;
+      smoothFpsRef.current = smoothFpsRef.current * 0.95 + currentFps * 0.05;
+      if (typeof window !== 'undefined') {
+        window.__THREE_FPS__ = Math.round(smoothFpsRef.current);
+      }
+    }
+
+    // Expose renderer stats for the watchdog
+    if (typeof window !== 'undefined') {
+      window.__THREE_RENDERER_STATS__ = {
+        geometries: gl.info.memory.geometries,
+        textures: gl.info.memory.textures,
+        programs: gl.info.programs ? (gl.info.programs.length || 0) : 0,
+        calls: gl.info.render.calls,
+        triangles: gl.info.render.triangles,
+      };
+    }
 
     // Dynamically calculate the mapping from turbine parts to closest child meshes on load
     if (activeModel === 'turbine' && turbineRef.current && !mappingCalculated.current) {
@@ -1994,7 +2019,7 @@ function SpatialScene({
         </group>
 
         {/* Render respective tag nodes */}
-        {!isSafeMode && Object.entries(partsData).map(([id, item]) => {
+        {!isSafeMode && !fuseTriggered && Object.entries(partsData).map(([id, item]) => {
           let explodedPos = getExplodedPosition(id, item.pos);
 
           // For the wind turbine, bind the tag position directly to the corresponding pre-calculated child mesh coordinate
@@ -2029,7 +2054,7 @@ function SpatialScene({
         })}
 
         {/* Temporary tag node helper for Configurator mode */}
-        {!isSafeMode && configMode && selectedMeshIdx >= 0 && turbineRef.current && (
+        {!isSafeMode && !fuseTriggered && configMode && selectedMeshIdx >= 0 && turbineRef.current && (
           (() => {
             const child = turbineRef.current.children[selectedMeshIdx];
             if (child && child.isMesh) {
@@ -2315,6 +2340,10 @@ export default function SpatialUI() {
   const [tempTelemetryShow, setTempTelemetryShow] = useState(false);
   const [tempConfigShow, setTempConfigShow] = useState(false);
 
+  // Geometry Watchdog / Circuit Breaker states
+  const [fuseTriggered, setFuseTriggered] = useState(false);
+  const [rendererStats, setRendererStats] = useState(null);
+
   // Tag Configuration Mode States
   const [configMode, setConfigMode] = useState(false);
   const [selectedMeshIdx, setSelectedMeshIdx] = useState(-1);
@@ -2382,6 +2411,85 @@ export default function SpatialUI() {
       window.removeEventListener('unhandledrejection', handleUnhandledRejection);
     };
   }, []);
+
+  // Initialize watchdog flags on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.__PAUSE_HAND_TRACKING__ = false;
+      window.__HAND_TRACKING_FPS__ = 0;
+      window.__THREE_FPS__ = 60;
+    }
+  }, []);
+
+  // Geometry Watchdog Sampler & Circuit Breaker (runs every 5 seconds)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const stats = (typeof window !== 'undefined') ? window.__THREE_RENDERER_STATS__ : null;
+      const appFps = (typeof window !== 'undefined') ? (window.__THREE_FPS__ ?? 60) : 60;
+      const handFps = (typeof window !== 'undefined') ? (window.__HAND_TRACKING_FPS__ ?? 0) : 0;
+
+      if (!stats) return;
+
+      const currentGeometries = stats.geometries;
+
+      // Update state for realtime sidebar Card and debug modal overlay
+      setRendererStats({
+        ...stats,
+        fps: appFps,
+        handFps: handFps,
+        handTrackingActive: trackingMode !== 'mouse' && handDetected,
+        handHologramActive: trackingMode !== 'mouse' && handDetected,
+        tagNodeActive: !isSafeMode && !fuseTriggered,
+        activeModel: activeModel,
+      });
+
+      console.log(`[Geometry Watchdog] Geometries: ${currentGeometries}, Textures: ${stats.textures}, Programs: ${stats.programs}, FPS: ${appFps}, HandFPS: ${handFps}`);
+
+      // Warning threshold: > 1000 geometries
+      if (currentGeometries > 1000) {
+        pushCrashLog('geometry-leak-warning', {
+          geometries: currentGeometries,
+          textures: stats.textures,
+          programs: stats.programs,
+          render: {
+            calls: stats.calls,
+            triangles: stats.triangles,
+          },
+          fps: appFps,
+          handFps: handFps,
+          activeModel,
+          trackingMode,
+        });
+      }
+
+      // Circuit breaker (熔断) threshold: > 3000 geometries
+      if (currentGeometries > 3000 && !fuseTriggered) {
+        setFuseTriggered(true);
+        if (typeof window !== 'undefined') {
+          window.__PAUSE_HAND_TRACKING__ = true;
+        }
+        setTrackingMode('mouse');
+
+        pushCrashLog('circuit-breaker-triggered', {
+          geometries: currentGeometries,
+          textures: stats.textures,
+          programs: stats.programs,
+          render: {
+            calls: stats.calls,
+            triangles: stats.triangles,
+          },
+          fps: appFps,
+          handFps: handFps,
+          activeModel,
+          trackingMode,
+        });
+
+        console.error(`[Geometry Watchdog] CIRCUIT BREAKER TRIGGERED! Geometries count ${currentGeometries} exceeded limit 3000. Paused hand tracking.`);
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [trackingMode, handDetected, activeModel, fuseTriggered, setTrackingMode]);
 
   const handleClearLogs = () => {
     try {
@@ -2651,27 +2759,87 @@ export default function SpatialUI() {
 
           <HudCard>
             <h3>性能诊断</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginTop: '0.3rem' }}>
-              <div className="sparkline-row">
-                <span>帧率: <span style={{ color: '#0f172a', fontWeight: '600' }}>59.8 FPS</span></span>
-                <Sparkline color="#16a34a" points={[15, 18, 17, 16, 20, 19, 21, 20, 18, 20]} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', marginTop: '0.3rem', fontSize: '0.7rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(0,0,0,0.04)', paddingBottom: '0.2rem' }}>
+                <span>主循环帧率:</span>
+                <span style={{ color: '#0f172a', fontWeight: '600' }}>
+                  {rendererStats ? `${Math.round(rendererStats.fps)} FPS` : '计算中...'}
+                </span>
               </div>
-              <div className="sparkline-row">
-                <span>渲染时间: <span style={{ color: '#0f172a', fontWeight: '600' }}>16.7 ms</span></span>
-                <Sparkline color="#16a34a" points={[10, 8, 12, 11, 15, 12, 10, 9, 11, 8]} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(0,0,0,0.04)', paddingBottom: '0.2rem' }}>
+                <span>手势帧率:</span>
+                <span style={{ color: '#0f172a', fontWeight: '600' }}>
+                  {trackingMode === 'mouse' ? '已关闭' : (rendererStats ? `${Math.round(rendererStats.handFps)} FPS` : '0 FPS')}
+                </span>
               </div>
-              <div className="sparkline-row">
-                <span>CPU 占用: <span style={{ color: '#0f172a', fontWeight: '600' }}>12%</span></span>
-                <Sparkline color="#2563eb" points={[5, 12, 18, 15, 8, 22, 14, 18, 10, 15]} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(0,0,0,0.04)', paddingBottom: '0.2rem' }}>
+                <span>几何体 (Geometries):</span>
+                <span style={{ color: (rendererStats?.geometries > 1000) ? '#dc2626' : '#0f172a', fontWeight: '600' }}>
+                  {rendererStats?.geometries ?? '加载中...'}
+                </span>
               </div>
-              <div className="sparkline-row">
-                <span>GPU 占用: <span style={{ color: '#0f172a', fontWeight: '600' }}>18%</span></span>
-                <Sparkline color="#2563eb" points={[12, 15, 13, 17, 14, 18, 15, 16, 17, 18]} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(0,0,0,0.04)', paddingBottom: '0.2rem' }}>
+                <span>纹理 (Textures):</span>
+                <span style={{ color: '#0f172a', fontWeight: '600' }}>
+                  {rendererStats?.textures ?? '加载中...'}
+                </span>
               </div>
-              <div className="sparkline-row">
-                <span>内存占用: <span style={{ color: '#0f172a', fontWeight: '600' }}>1.2 GB</span></span>
-                <Sparkline color="#2563eb" points={[10, 10, 11, 11, 11, 12, 12, 12, 12, 12]} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(0,0,0,0.04)', paddingBottom: '0.2rem' }}>
+                <span>着色器 (Programs):</span>
+                <span style={{ color: '#0f172a', fontWeight: '600' }}>
+                  {rendererStats?.programs ?? '加载中...'}
+                </span>
               </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(0,0,0,0.04)', paddingBottom: '0.2rem' }}>
+                <span>绘制调用 (Calls):</span>
+                <span style={{ color: '#0f172a', fontWeight: '600' }}>
+                  {rendererStats?.calls ?? '加载中...'}
+                </span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>三角面数 (Triangles):</span>
+                <span style={{ color: '#0f172a', fontWeight: '600' }}>
+                  {rendererStats?.triangles ? rendererStats.triangles.toLocaleString() : '加载中...'}
+                </span>
+              </div>
+
+              {fuseTriggered && (
+                <div style={{
+                  marginTop: '0.4rem',
+                  padding: '0.5rem',
+                  background: 'rgba(220, 38, 38, 0.08)',
+                  border: '1px solid rgba(220, 38, 38, 0.2)',
+                  borderRadius: '4px',
+                  color: '#dc2626',
+                  fontSize: '0.65rem',
+                  lineHeight: '1.3'
+                }}>
+                  <strong>⚠️ 熔断保护已触发</strong><br />
+                  几何体泄漏已拦截，自动暂停手势并隐藏 3D 浮动标签。<br />
+                  <button
+                    onClick={() => {
+                      if (typeof window !== 'undefined') {
+                        window.__PAUSE_HAND_TRACKING__ = false;
+                      }
+                      setFuseTriggered(false);
+                    }}
+                    style={{
+                      marginTop: '0.4rem',
+                      background: '#dc2626',
+                      color: '#ffffff',
+                      border: 'none',
+                      padding: '0.25rem 0.5rem',
+                      borderRadius: '3px',
+                      cursor: 'pointer',
+                      fontSize: '0.6rem',
+                      fontWeight: 'bold',
+                      width: '100%'
+                    }}
+                  >
+                    手动重置熔断
+                  </button>
+                </div>
+              )}
             </div>
           </HudCard>
         </Sidebar>
@@ -2711,7 +2879,7 @@ export default function SpatialUI() {
                   setFocusMode={setFocusMode}
                   hoveredPartId={hoveredPartId}
                   setHoveredPartId={setHoveredPartId}
-                  configMode={configMode}
+                  configMode={configMode && !fuseTriggered}
                   selectedMeshIdx={selectedMeshIdx}
                   setSelectedMeshIdx={setSelectedMeshIdx}
                   hoveredMeshIdx={hoveredMeshIdx}
@@ -2723,7 +2891,7 @@ export default function SpatialUI() {
                   onModelLoaded={setMeshList}
                   cursorMode={cursorMode}
                 />
-                <HandHologram />
+                {!fuseTriggered && <HandHologram />}
                 <OrbitControls
                   enableZoom={cursorMode === 'zoom' || cursorMode === 'orbit'}
                   enablePan={cursorMode === 'pan'}
@@ -3265,6 +3433,32 @@ export default function SpatialUI() {
               <h2>🛠️ WebGL 崩溃黑匣子日志 (最近80条)</h2>
               <button className="close-btn" onClick={() => setShowDebugLogs(false)}>×</button>
             </div>
+
+            {/* Real-time Watchdog Overlay inside Debug Modal */}
+            <div style={{
+              background: 'rgba(15, 23, 42, 0.6)',
+              borderBottom: '1px solid rgba(231, 199, 126, 0.15)',
+              padding: '1rem 1.2rem',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+              gap: '0.8rem',
+              fontSize: '0.75rem',
+              lineHeight: '1.4'
+            }}>
+              <div>主循环帧率: <span style={{ color: '#16a34a', fontWeight: 'bold' }}>{rendererStats ? `${Math.round(rendererStats.fps)} FPS` : '计算中...'}</span></div>
+              <div>手势帧率: <span style={{ color: '#16a34a', fontWeight: 'bold' }}>{trackingMode === 'mouse' ? '已关闭' : (rendererStats ? `${Math.round(rendererStats.handFps)} FPS` : '0 FPS')}</span></div>
+              <div>几何体 (Geometries): <span style={{ color: (rendererStats?.geometries > 1000) ? '#ef4444' : '#38bdf8', fontWeight: 'bold' }}>{rendererStats?.geometries ?? '加载中...'}</span></div>
+              <div>纹理 (Textures): <span style={{ color: '#38bdf8', fontWeight: 'bold' }}>{rendererStats?.textures ?? '加载中...'}</span></div>
+              <div>着色器 (Programs): <span style={{ color: '#38bdf8', fontWeight: 'bold' }}>{rendererStats?.programs ?? '加载中...'}</span></div>
+              <div>绘制调用 (Calls): <span style={{ color: '#38bdf8', fontWeight: 'bold' }}>{rendererStats?.calls ?? '加载中...'}</span></div>
+              <div>三角面数 (Triangles): <span style={{ color: '#38bdf8', fontWeight: 'bold' }}>{rendererStats?.triangles ? rendererStats.triangles.toLocaleString() : '加载中...'}</span></div>
+              <div>手势追踪 (Tracking): <span style={{ color: trackingMode !== 'mouse' ? '#38bdf8' : '#94a3b8', fontWeight: 'bold' }}>{trackingMode !== 'mouse' ? '开启' : '关闭'}</span></div>
+              <div>手势骨架 (Hologram): <span style={{ color: (trackingMode !== 'mouse' && !fuseTriggered) ? '#38bdf8' : '#94a3b8', fontWeight: 'bold' }}>{(trackingMode !== 'mouse' && !fuseTriggered) ? '显示中' : '已隐藏'}</span></div>
+              <div>三维标签 (TagNode): <span style={{ color: (!isSafeMode && !fuseTriggered) ? '#38bdf8' : '#94a3b8', fontWeight: 'bold' }}>{(!isSafeMode && !fuseTriggered) ? '显示中' : '已隐藏'}</span></div>
+              <div>活动模型 (Model): <span style={{ color: '#e7c77e', fontWeight: 'bold' }}>{activeModel}</span></div>
+              <div>熔断保护状态: <span style={{ color: fuseTriggered ? '#ef4444' : '#16a34a', fontWeight: 'bold' }}>{fuseTriggered ? '⚠️ 触发熔断保护' : '● 正常运行'}</span></div>
+            </div>
+
             <div className="debug-actions">
               <button className="btn-action" onClick={handleDownloadLogs}>下载 JSON</button>
               <button className="btn-action btn-secondary" onClick={handleClearLogs}>清空日志</button>
