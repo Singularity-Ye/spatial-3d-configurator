@@ -1327,10 +1327,12 @@ function SpatialScene({
   selectedPartId,
   setSelectedPartId,
   fov,
+  setFov,
   autoRotate,
   cameraPreset,
   setCameraPreset,
   focusMode,
+  setFocusMode,
   hoveredPartId,
   setHoveredPartId,
   configMode,
@@ -1342,13 +1344,22 @@ function SpatialScene({
   setCustomTurbineParts,
   partMeshIndices,
   setPartMeshIndices,
-  onModelLoaded
+  onModelLoaded,
+  cursorMode
 }) {
   const groupRef = useRef();
   const tickRingRef = useRef();
   const turbineRef = useRef();
   const isPinchingRef = useRef(false);
   const prevCursorRef = useRef({ x: 0, y: 0 });
+  const modelGroupRef = useRef();
+  const isFistDraggingRef = useRef(false);
+  const prevHandsDistRef = useRef(null);
+  const prevHandsVertDistRef = useRef(null);
+  const peaceStartTimeRef = useRef(null);
+  const peaceTriggeredRef = useRef(false);
+  const twoHandsFistStartTimeRef = useRef(null);
+  const twoHandsFistTriggeredRef = useRef(false);
 
   const mappingCalculated = useRef(false);
 
@@ -1357,7 +1368,20 @@ function SpatialScene({
     setPartMeshIndices({});
   }, [activeModel, setPartMeshIndices]);
 
-  const { cursor, handDetected, trackingMode, isPinching } = useHandTracking();
+  const {
+    cursor,
+    handDetected,
+    trackingMode,
+    isPinching,
+    isFist,
+    isPeaceSign,
+    isPalm,
+    twoHandsDetected,
+    twoHandsDistance,
+    twoHandsVerticalDistance,
+    twoHandsFist,
+    twoHandsPalm
+  } = useHandTracking();
 
   useFrame((state, delta) => {
     const { camera, controls } = state;
@@ -1414,12 +1438,12 @@ function SpatialScene({
     if (trackingMode !== 'mouse' && handDetected) {
       state.pointer.set(cursor.x, cursor.y);
       
-      // Control 3D group rotation via air hand movement ONLY when pinching (pinch-to-rotate)
-      // We ignore pinch starts below cursor.y = -0.55 to prevent conflicts when dragging the bottom slider/controls
-      if (isPinching) {
-        if (!isPinchingRef.current) {
+      // Control 3D group rotation via air hand movement ONLY when in fist dragging state
+      const isDragging = isFist && !twoHandsDetected;
+      if (isDragging) {
+        if (!isFistDraggingRef.current) {
           if (cursor.y > -0.55) {
-            isPinchingRef.current = true;
+            isFistDraggingRef.current = true;
             prevCursorRef.current = { x: cursor.x, y: cursor.y };
           }
         } else {
@@ -1432,7 +1456,7 @@ function SpatialScene({
           prevCursorRef.current = { x: cursor.x, y: cursor.y };
         }
       } else {
-        isPinchingRef.current = false;
+        isFistDraggingRef.current = false;
       }
     } else if (autoRotate) {
       group.rotation.y += delta * 0.15;
@@ -1480,6 +1504,22 @@ function SpatialScene({
       }
     }
 
+    // Smoothly focus on selected part or whole model
+    if (controls && !cameraPreset) {
+      let targetCenter = new THREE.Vector3(0, 0, 0);
+      if (focusMode && selectedPartId) {
+        const item = partsData[selectedPartId];
+        if (item) {
+          const explodedPos = getExplodedPosition(selectedPartId, item.pos);
+          targetCenter.set(explodedPos[0], explodedPos[1], explodedPos[2]);
+        }
+      }
+      if (controls.target.distanceToSquared(targetCenter) > 0.0001) {
+        controls.target.lerp(targetCenter, 0.1);
+        controls.update();
+      }
+    }
+
     // Rotate tick ring
     if (tickRingRef.current) {
       tickRingRef.current.rotation.z -= delta * 0.15;
@@ -1488,12 +1528,104 @@ function SpatialScene({
 
   // Handle hand pinch gesture to select the currently hovered 3D sub-component
   useEffect(() => {
-    if (trackingMode !== 'mouse' && handDetected && isPinching) {
+    if (trackingMode !== 'mouse' && handDetected && isPinching && !twoHandsDetected) {
       if (hoveredPartId) {
         setSelectedPartId(hoveredPartId);
       }
     }
-  }, [isPinching, hoveredPartId, handDetected, trackingMode, setSelectedPartId]);
+  }, [isPinching, hoveredPartId, handDetected, trackingMode, twoHandsDetected, setSelectedPartId]);
+
+  // Performance Optimization: Traverse model and disable complex mesh raycasting
+  useEffect(() => {
+    if (modelGroupRef.current) {
+      modelGroupRef.current.traverse((child) => {
+        if (child.isMesh) {
+          child.raycast = () => null;
+        }
+      });
+    }
+  }, [activeModel]);
+
+  // Gesture 4: Two-handed distance change -> Adjust camera zoom (FOV)
+  useEffect(() => {
+    if (twoHandsDetected && trackingMode !== 'mouse') {
+      if (prevHandsDistRef.current !== null && prevHandsDistRef.current > 0) {
+        const delta = twoHandsDistance - prevHandsDistRef.current;
+        if (Math.abs(delta) > 0.01) {
+          setFov(prev => Math.max(15, Math.min(85, prev - delta * 18)));
+        }
+      }
+      prevHandsDistRef.current = twoHandsDistance;
+    } else {
+      prevHandsDistRef.current = null;
+    }
+  }, [twoHandsDetected, twoHandsDistance, trackingMode]);
+
+  // Gesture 5: Two-handed vertical pull/push -> Adjust explodeAmount
+  useEffect(() => {
+    if (twoHandsDetected && trackingMode !== 'mouse' && !twoHandsFist) {
+      if (prevHandsVertDistRef.current !== null && prevHandsVertDistRef.current > 0) {
+        const delta = twoHandsVerticalDistance - prevHandsVertDistRef.current;
+        if (Math.abs(delta) > 0.01) {
+          setExplodeAmount(prev => Math.max(0, Math.min(1, prev + delta * 1.5)));
+        }
+      }
+      prevHandsVertDistRef.current = twoHandsVerticalDistance;
+    } else {
+      prevHandsVertDistRef.current = null;
+    }
+  }, [twoHandsDetected, twoHandsVerticalDistance, twoHandsFist, trackingMode]);
+
+  // Gesture 6: V Sign (Peace) -> Toggle Focus Mode (held for 0.6 seconds)
+  useEffect(() => {
+    if (isPeaceSign && handDetected && trackingMode !== 'mouse' && !twoHandsDetected) {
+      if (!peaceStartTimeRef.current) {
+        peaceStartTimeRef.current = Date.now();
+      } else if (!peaceTriggeredRef.current) {
+        const elapsed = Date.now() - peaceStartTimeRef.current;
+        if (elapsed >= 600) {
+          setFocusMode(prev => !prev);
+          peaceTriggeredRef.current = true;
+        }
+      }
+    } else {
+      peaceStartTimeRef.current = null;
+      peaceTriggeredRef.current = false;
+    }
+  }, [isPeaceSign, handDetected, trackingMode, twoHandsDetected]);
+
+  // Gesture 7: Open Palm (Palm) -> Cancel dragging / Return to default
+  useEffect(() => {
+    if (isPalm && handDetected && trackingMode !== 'mouse') {
+      setSelectedPartId(null);
+      setFocusMode(false);
+      setHoveredPartId(null);
+      setExplodeAmount(0);
+    }
+  }, [isPalm, handDetected, trackingMode]);
+
+  // Gesture 8: Two-handed Fist hold -> Reset to Home view (held for 0.8 seconds)
+  useEffect(() => {
+    if (twoHandsFist && handDetected && trackingMode !== 'mouse') {
+      if (!twoHandsFistStartTimeRef.current) {
+        twoHandsFistStartTimeRef.current = Date.now();
+      } else if (!twoHandsFistTriggeredRef.current) {
+        const elapsed = Date.now() - twoHandsFistStartTimeRef.current;
+        if (elapsed >= 800) {
+          setFov(48);
+          setCameraPreset('home');
+          setExplodeAmount(0);
+          setSelectedPartId(null);
+          setHoveredPartId(null);
+          setFocusMode(false);
+          twoHandsFistTriggeredRef.current = true;
+        }
+      }
+    } else {
+      twoHandsFistStartTimeRef.current = null;
+      twoHandsFistTriggeredRef.current = false;
+    }
+  }, [twoHandsFist, handDetected, trackingMode]);
 
   const partsData = activeModel === 'fridge' 
     ? FRIDGE_PARTS 
@@ -1624,20 +1756,22 @@ function SpatialScene({
         ref={groupRef} 
         rotation={[0.15, -0.4, 0]}
       >
-        {/* Render selected model */}
-        {activeModel === 'fridge' ? (
-          <Refrigerator explode={explode} />
-        ) : activeModel === 'battery' ? (
-          <Battery explode={explode} />
-        ) : (
-          <Turbine 
-            explode={explode} 
-            turbineRef={turbineRef} 
-            configMode={configMode}
-            selectedMeshIdx={selectedMeshIdx}
-            hoveredMeshIdx={hoveredMeshIdx}
-          />
-        )}
+        {/* Render selected model inside a group that has raycasting disabled */}
+        <group ref={modelGroupRef}>
+          {activeModel === 'fridge' ? (
+            <Refrigerator explode={explode} />
+          ) : activeModel === 'battery' ? (
+            <Battery explode={explode} />
+          ) : (
+            <Turbine 
+              explode={explode} 
+              turbineRef={turbineRef} 
+              configMode={configMode}
+              selectedMeshIdx={selectedMeshIdx}
+              hoveredMeshIdx={hoveredMeshIdx}
+            />
+          )}
+        </group>
 
         {/* Render respective tag nodes */}
         {Object.entries(partsData).map(([id, item]) => {
@@ -1681,6 +1815,7 @@ function SpatialScene({
               explode={explode}
               desc={item.desc}
               partCode={item.id}
+              isActiveMode={trackingMode !== 'mouse' || cursorMode === 'select' || configMode}
             />
           );
         })}
@@ -1719,6 +1854,7 @@ function SpatialScene({
                     explode={explode}
                     desc={`网格名称: ${child.name || 'Unnamed'}`}
                     partCode={`INDEX-${selectedMeshIdx}`}
+                    isActiveMode={true}
                   />
                 );
               }
@@ -2279,10 +2415,12 @@ export default function SpatialUI() {
                   selectedPartId={selectedPartId}
                   setSelectedPartId={setSelectedPartId}
                   fov={fov}
+                  setFov={setFov}
                   autoRotate={autoRotate}
                   cameraPreset={cameraPreset}
                   setCameraPreset={setCameraPreset}
                   focusMode={focusMode}
+                  setFocusMode={setFocusMode}
                   hoveredPartId={hoveredPartId}
                   setHoveredPartId={setHoveredPartId}
                   configMode={configMode}
@@ -2295,6 +2433,7 @@ export default function SpatialUI() {
                   partMeshIndices={partMeshIndices}
                   setPartMeshIndices={setPartMeshIndices}
                   onModelLoaded={setMeshList}
+                  cursorMode={cursorMode}
                 />
                 <OrbitControls
                   enableZoom={cursorMode === 'zoom' || cursorMode === 'orbit'}

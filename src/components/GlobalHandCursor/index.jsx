@@ -76,50 +76,7 @@ const CameraPiP = styled.div`
   }
 `;
 
-const BackHUD = styled.div`
-  position: fixed;
-  left: 50%;
-  top: 12%;
-  transform: translateX(-50%);
-  z-index: 10001;
-  pointer-events: none;
-  background: linear-gradient(135deg, rgba(14, 24, 20, 0.92), rgba(26, 20, 15, 0.88));
-  border: 1px solid rgba(231, 199, 126, 0.3);
-  border-radius: 30px;
-  padding: 0.5rem 1.2rem;
-  color: #e7c77e;
-  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  font-size: 0.8rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  box-shadow: 
-    0 10px 25px rgba(0, 0, 0, 0.4),
-    0 0 12px rgba(231, 199, 126, 0.15);
-  animation: fadeIn 0.25s ease-out;
 
-  .progress-bar {
-    width: 80px;
-    height: 4px;
-    background: rgba(231, 199, 126, 0.15);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-
-  .progress-fill {
-    height: 100%;
-    background: #e7c77e;
-    box-shadow: 0 0 8px #e7c77e;
-    width: ${props => props.$progress}%;
-    transition: width 0.05s linear;
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translate(-50%, -10px); }
-    to { opacity: 1; transform: translate(-50%, 0); }
-  }
-`;
 
 export default function GlobalHandCursor() {
   const {
@@ -133,44 +90,10 @@ export default function GlobalHandCursor() {
     canvasRef
   } = useHandTracking();
 
-  const [backProgress, setBackProgress] = useState(0);
-  const backTimerRef = useRef(null);
-
   const lastElementRef = useRef(null);
   const wasPinchingRef = useRef(false);
   const pinchStartRef = useRef({ x: 0, y: 0, time: 0 });
   const lastClientRef = useRef({ x: 0, y: 0 });
-
-  // 1. Gesture peace sign to navigate back
-  useEffect(() => {
-    if (isPeaceSign && handDetected && trackingMode !== TRACKING_MODES.MOUSE) {
-      if (!backTimerRef.current) {
-        const startTime = Date.now();
-        backTimerRef.current = setInterval(() => {
-          const elapsed = Date.now() - startTime;
-          const progress = Math.min((elapsed / 1200) * 100, 100);
-          setBackProgress(progress);
-          
-          if (progress >= 100) {
-            clearInterval(backTimerRef.current);
-            backTimerRef.current = null;
-            // Go back safely
-            window.history.back();
-          }
-        }, 30);
-      }
-    } else {
-      if (backTimerRef.current) {
-        clearInterval(backTimerRef.current);
-        backTimerRef.current = null;
-      }
-      setBackProgress(0);
-    }
-
-    return () => {
-      if (backTimerRef.current) clearInterval(backTimerRef.current);
-    };
-  }, [isPeaceSign, handDetected, trackingMode]);
 
   // Helper to dispatch synthetic events with pageX, pageY, offsetX, and offsetY injected
   const dispatchSyntheticEvent = (el, type, cX, cY, isPointer = true) => {
@@ -331,16 +254,6 @@ export default function GlobalHandCursor() {
         <canvas ref={canvasRef} width="640" height="480" />
       </CameraPiP>
 
-      {/* 4. Peace sign "Recall" Back HUD overlay */}
-      {backProgress > 0 && (
-        <BackHUD $progress={backProgress}>
-          <span>◀ 正在汇聚回溯之光...</span>
-          <div className="progress-bar">
-            <div className="progress-fill" />
-          </div>
-          <span>{Math.round(backProgress)}%</span>
-        </BackHUD>
-      )}
     </>
   );
 }

@@ -80,11 +80,19 @@ export function HandTrackingProvider({ children }) {
   const [isPinching, setIsPinching] = useState(false);
   const [isFist, setIsFist] = useState(false);
   const [isPeaceSign, setIsPeaceSign] = useState(false);
+  const [isPalm, setIsPalm] = useState(false);
   const [landmarks, setLandmarks] = useState([]);
   const [isConnected, setIsConnected] = useState(false);
   const [wsUrl, setWsUrl] = useState('ws://localhost:8765');
   const [handRot, setHandRot] = useState({ x: 0, y: 0, z: 0 });
   const [cameraActive, setCameraActive] = useState(false);
+
+  // Two-handed tracking states
+  const [twoHandsDetected, setTwoHandsDetected] = useState(false);
+  const [twoHandsDistance, setTwoHandsDistance] = useState(0);
+  const [twoHandsVerticalDistance, setTwoHandsVerticalDistance] = useState(0);
+  const [twoHandsFist, setTwoHandsFist] = useState(false);
+  const [twoHandsPalm, setTwoHandsPalm] = useState(false);
 
   // Hidden video and canvas refs for MediaPipe
   const videoRefInternal = useRef(null);
@@ -106,6 +114,9 @@ export function HandTrackingProvider({ children }) {
 
   const peaceActiveRef = useRef(false);
   const peaceTransitionFramesRef = useRef(0);
+
+  const palmActiveRef = useRef(false);
+  const palmTransitionFramesRef = useRef(0);
 
   // Cursor filter states
   const smoothedCursorRef = useRef({ x: 0, y: 0 });
@@ -170,6 +181,24 @@ export function HandTrackingProvider({ children }) {
     }
   }, []);
 
+  const updatePalmState = useCallback((rawPalmActive) => {
+    if (rawPalmActive) {
+      palmTransitionFramesRef.current = 0;
+      if (!palmActiveRef.current) {
+        palmActiveRef.current = true;
+        setIsPalm(true);
+      }
+    } else {
+      if (palmActiveRef.current) {
+        palmTransitionFramesRef.current += 1;
+        if (palmTransitionFramesRef.current >= 6) {
+          palmActiveRef.current = false;
+          setIsPalm(false);
+        }
+      }
+    }
+  }, []);
+
   // Callback refs to detect mounting/unmounting of video/canvas elements across page transitions
   const [elementTrigger, setElementTrigger] = useState(0);
 
@@ -229,6 +258,8 @@ export function HandTrackingProvider({ children }) {
     fistTransitionFramesRef.current = 0;
     peaceActiveRef.current = false;
     peaceTransitionFramesRef.current = 0;
+    palmActiveRef.current = false;
+    palmTransitionFramesRef.current = 0;
     isFirstFrameRef.current = true;
 
     setCameraActive(false);
@@ -236,7 +267,13 @@ export function HandTrackingProvider({ children }) {
     setIsPinching(false);
     setIsFist(false);
     setIsPeaceSign(false);
+    setIsPalm(false);
     setLandmarks([]);
+    setTwoHandsDetected(false);
+    setTwoHandsDistance(0);
+    setTwoHandsVerticalDistance(0);
+    setTwoHandsFist(false);
+    setTwoHandsPalm(false);
   }, []);
 
   // Process MediaPipe results
@@ -251,88 +288,132 @@ export function HandTrackingProvider({ children }) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
 
-    if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-      const hand = results.multiHandLandmarks[0];
-      setLandmarks(hand);
-      setHandDetected(true);
-
-      // Mapped NDC Pointer Cursor (based on Index Finger Tip landmark 8)
-      // Mirroring correction: (1 - x) to match mirrored video display
+    const processHandData = (hand) => {
+      if (!hand || hand.length < 21) return null;
+      
       const indexTip = hand[8];
       const ndcX = 1 - indexTip.x * 2;
       const ndcY = 1 - indexTip.y * 2;
 
-      // Pinch check using scale-independent normalized distance
-      // Distance between Thumb Tip (4) and Index Tip (8) relative to hand size (wrist 0 to middle knuckle 9)
       const pinchDist = getDistance(hand[4], hand[8]);
       const handScale = getDistance(hand[0], hand[9]) || 0.2;
       const relativePinchDist = pinchDist / handScale;
-      // 0.38 is an ideal threshold that detects pinch cleanly and avoids occlusion issues
-      const rawPinchActive = relativePinchDist < 0.38;
-      updatePinchState(rawPinchActive);
+      const rawPinch = relativePinchDist < 0.38;
 
-      // Smooth the cursor position using first-order low-pass filter (Exponential Moving Average)
-      // When pinch is active, we apply a stronger filter to mitigate self-occlusion jitter.
-      const filterFactor = pinchActiveRef.current ? 0.08 : 0.22;
-
-      if (isFirstFrameRef.current) {
-        smoothedCursorRef.current = { x: ndcX, y: ndcY };
-        isFirstFrameRef.current = false;
-      } else {
-        smoothedCursorRef.current.x += (ndcX - smoothedCursorRef.current.x) * filterFactor;
-        smoothedCursorRef.current.y += (ndcY - smoothedCursorRef.current.y) * filterFactor;
-      }
-
-      setCursor({ x: smoothedCursorRef.current.x, y: smoothedCursorRef.current.y });
-
-      // Fist check (curl of index, middle, ring, pinky)
       const indexCurled = isFingerCurled(hand, 5, 6, 7, 8);
       const middleCurled = isFingerCurled(hand, 9, 10, 11, 12);
       const ringCurled = isFingerCurled(hand, 13, 14, 15, 16);
       const pinkyCurled = isFingerCurled(hand, 17, 18, 19, 20);
-      const rawFistActive = indexCurled && middleCurled && ringCurled && pinkyCurled;
-      updateFistState(rawFistActive);
 
-      // Peace sign check (Index and Middle extended, Ring and Pinky curled)
-      const rawPeaceActive = !indexCurled && !middleCurled && ringCurled && pinkyCurled;
-      updatePeaceState(rawPeaceActive);
+      const rawFist = indexCurled && middleCurled && ringCurled && pinkyCurled;
+      const rawPeace = !indexCurled && !middleCurled && ringCurled && pinkyCurled;
+      const rawPalm = !indexCurled && !middleCurled && !ringCurled && !pinkyCurled;
 
-      // Calculate Rotation
       const rot = calculateRotation(hand);
-      setHandRot(rot);
 
-      // Draw skeleton on 2D PiP canvas
+      return {
+        cursor: { x: ndcX, y: ndcY },
+        isPinching: rawPinch,
+        isFist: rawFist,
+        isPeaceSign: rawPeace,
+        isPalm: rawPalm,
+        rotation: rot
+      };
+    };
+
+    if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+      setLandmarks(results.multiHandLandmarks);
+      setHandDetected(true);
+
+      const h1_landmarks = results.multiHandLandmarks[0];
+      const h2_landmarks = results.multiHandLandmarks.length > 1 ? results.multiHandLandmarks[1] : null;
+
+      const h1_data = processHandData(h1_landmarks);
+      const h2_data = processHandData(h2_landmarks);
+
+      setTwoHandsDetected(!!h2_data);
+
+      if (h1_data) {
+        // Smooth the cursor position using first-order low-pass filter (Exponential Moving Average)
+        const filterFactor = h1_data.isPinching ? 0.14 : 0.24;
+
+        if (isFirstFrameRef.current) {
+          smoothedCursorRef.current = { x: h1_data.cursor.x, y: h1_data.cursor.y };
+          isFirstFrameRef.current = false;
+        } else {
+          smoothedCursorRef.current.x += (h1_data.cursor.x - smoothedCursorRef.current.x) * filterFactor;
+          smoothedCursorRef.current.y += (h1_data.cursor.y - smoothedCursorRef.current.y) * filterFactor;
+        }
+
+        setCursor({ x: smoothedCursorRef.current.x, y: smoothedCursorRef.current.y });
+        setHandRot(h1_data.rotation);
+
+        updatePinchState(h1_data.isPinching);
+        updateFistState(h1_data.isFist);
+        updatePeaceState(h1_data.isPeaceSign);
+        updatePalmState(h1_data.isPalm);
+      }
+
+      if (h1_data && h2_data) {
+        const p1 = h1_landmarks[9];
+        const p2 = h2_landmarks[9];
+        const dist = getDistance(p1, p2);
+        
+        const h1_scale = getDistance(h1_landmarks[0], h1_landmarks[9]) || 0.2;
+        const h2_scale = getDistance(h2_landmarks[0], h2_landmarks[9]) || 0.2;
+        const avgScale = (h1_scale + h2_scale) / 2;
+        
+        const normDist = dist / avgScale;
+        setTwoHandsDistance(normDist);
+
+        const vertDist = Math.abs(p1.y - p2.y) / avgScale;
+        setTwoHandsVerticalDistance(vertDist);
+
+        setTwoHandsFist(h1_data.isFist && h2_data.isFist);
+        setTwoHandsPalm(h1_data.isPalm && h2_data.isPalm);
+      } else {
+        setTwoHandsDistance(0);
+        setTwoHandsVerticalDistance(0);
+        setTwoHandsFist(false);
+        setTwoHandsPalm(false);
+      }
+
+      // Draw skeleton on 2D PiP canvas for all detected hands
       if (ctx) {
-        ctx.fillStyle = pinchActiveRef.current ? '#ff3b30' : '#00e5ff';
-        ctx.strokeStyle = '#00e5ff';
-        ctx.lineWidth = 2.5;
+        results.multiHandLandmarks.forEach((hand, handIdx) => {
+          const isPinchActive = handIdx === 0 ? pinchActiveRef.current : false;
+          ctx.fillStyle = isPinchActive ? '#ff3b30' : '#00e5ff';
+          ctx.strokeStyle = '#00e5ff';
+          ctx.lineWidth = 2.5;
 
-        // Draw connections
-        const connections = [
-          [0, 1], [1, 2], [2, 3], [3, 4],
-          [0, 5], [5, 6], [6, 7], [7, 8],
-          [0, 9], [9, 10], [10, 11], [11, 12],
-          [0, 13], [13, 14], [14, 15], [15, 16],
-          [0, 17], [17, 18], [18, 19], [19, 20],
-          [5, 9], [9, 13], [13, 17]
-        ];
+          // Draw connections
+          const connections = [
+            [0, 1], [1, 2], [2, 3], [3, 4],
+            [0, 5], [5, 6], [6, 7], [7, 8],
+            [0, 9], [9, 10], [10, 11], [11, 12],
+            [0, 13], [13, 14], [14, 15], [15, 16],
+            [0, 17], [17, 18], [18, 19], [19, 20],
+            [5, 9], [9, 13], [13, 17]
+          ];
 
-        connections.forEach(([s, e]) => {
-          ctx.beginPath();
-          ctx.moveTo(hand[s].x * canvas.width, hand[s].y * canvas.height);
-          ctx.lineTo(hand[e].x * canvas.width, hand[e].y * canvas.height);
-          ctx.stroke();
-        });
+          connections.forEach(([s, e]) => {
+            ctx.beginPath();
+            ctx.moveTo(hand[s].x * canvas.width, hand[s].y * canvas.height);
+            ctx.lineTo(hand[e].x * canvas.width, hand[e].y * canvas.height);
+            ctx.stroke();
+          });
 
-        // Draw joint points
-        hand.forEach((p, idx) => {
-          ctx.beginPath();
-          ctx.arc(p.x * canvas.width, p.y * canvas.height, idx === 4 || idx === 8 ? 5.5 : 3.5, 0, Math.PI * 2);
-          ctx.fill();
+          // Draw joint points
+          hand.forEach((p, idx) => {
+            ctx.beginPath();
+            ctx.arc(p.x * canvas.width, p.y * canvas.height, idx === 4 || idx === 8 ? 5.5 : 3.5, 0, Math.PI * 2);
+            ctx.fill();
+          });
         });
       }
     } else {
       setHandDetected(false);
+      setTwoHandsDetected(false);
       isFirstFrameRef.current = true;
       
       // Reset gesture states & debouncing frame counters immediately
@@ -343,13 +424,20 @@ export function HandTrackingProvider({ children }) {
       fistTransitionFramesRef.current = 0;
       peaceActiveRef.current = false;
       peaceTransitionFramesRef.current = 0;
+      palmActiveRef.current = false;
+      palmTransitionFramesRef.current = 0;
 
       setIsPinching(false);
       setIsFist(false);
       setIsPeaceSign(false);
+      setIsPalm(false);
       setLandmarks([]);
+      setTwoHandsDistance(0);
+      setTwoHandsVerticalDistance(0);
+      setTwoHandsFist(false);
+      setTwoHandsPalm(false);
     }
-  }, [updatePinchState, updateFistState, updatePeaceState]);
+  }, [updatePinchState, updateFistState, updatePeaceState, updatePalmState]);
 
   // Initialize MediaPipe tracking
   const startCameraTracking = useCallback(async () => {
@@ -522,18 +610,62 @@ export function HandTrackingProvider({ children }) {
         y: Math.sin(angle) * 0.6,
       };
       setCursor(simulatedCursor);
-      
-      // 10% chance of pinch toggling
-      const isPinchSim = Math.sin(angle * 2.5) > 0.82;
-      setIsPinching(isPinchSim);
-      
-      // Fist check
-      const isFistSim = Math.sin(angle * 1.5) < -0.85;
-      setIsFist(isFistSim);
 
-      // Peace sign mock (15% chance during loop when angle is in certain range)
-      const isPeaceSim = Math.cos(angle * 2.0) > 0.88;
-      setIsPeaceSign(isPeaceSim);
+      // Simulate two hands 50% of the time
+      const simulatedTwoHands = Math.sin(angle * 0.6) > 0.1;
+      setTwoHandsDetected(simulatedTwoHands);
+
+      const fakeLandmarks1 = Array.from({ length: 21 }, (_, idx) => ({
+        x: basePos.x - 0.15 + (idx * 0.003),
+        y: basePos.y + (idx * 0.003),
+        z: basePos.z,
+      }));
+
+      const fakeLandmarks2 = Array.from({ length: 21 }, (_, idx) => ({
+        x: basePos.x + 0.15 + (idx * 0.003),
+        y: basePos.y + (idx * 0.003),
+        z: basePos.z,
+      }));
+
+      setLandmarks(simulatedTwoHands ? [fakeLandmarks1, fakeLandmarks2] : [fakeLandmarks1]);
+
+      if (simulatedTwoHands) {
+        // Simulate hands moving apart and together
+        const distSim = 2.2 + Math.sin(angle * 1.5) * 0.8;
+        setTwoHandsDistance(distSim);
+
+        // Simulate vertical separation
+        const vertSim = 0.6 + Math.cos(angle * 1.0) * 0.4;
+        setTwoHandsVerticalDistance(vertSim);
+
+        // Simulate dual gestures
+        const isFistSim = Math.sin(angle * 1.5) < -0.85;
+        const isPalmSim = Math.cos(angle * 1.5) > 0.85;
+        setTwoHandsFist(isFistSim);
+        setTwoHandsPalm(isPalmSim);
+        
+        setIsPinching(false);
+        setIsFist(false);
+        setIsPeaceSign(false);
+        setIsPalm(false);
+      } else {
+        const isPinchSim = Math.sin(angle * 2.5) > 0.82;
+        setIsPinching(isPinchSim);
+        
+        const isFistSim = Math.sin(angle * 1.5) < -0.85;
+        setIsFist(isFistSim);
+
+        const isPeaceSim = Math.cos(angle * 2.0) > 0.88;
+        setIsPeaceSign(isPeaceSim);
+
+        const isPalmSim = Math.cos(angle * 2.0) < -0.88;
+        setIsPalm(isPalmSim);
+
+        setTwoHandsDistance(0);
+        setTwoHandsVerticalDistance(0);
+        setTwoHandsFist(false);
+        setTwoHandsPalm(false);
+      }
 
       // Rotation simulation
       setHandRot({
@@ -541,16 +673,6 @@ export function HandTrackingProvider({ children }) {
         y: Math.cos(angle * 0.8) * 0.2,
         z: Math.sin(angle * 0.4) * 0.1,
       });
-
-      // Construct a fake set of landmarks
-      const fakeLandmarks = Array.from({ length: 21 }, (_, idx) => {
-        return {
-          x: basePos.x + (idx * 0.005),
-          y: basePos.y + (idx * 0.005),
-          z: basePos.z,
-        };
-      });
-      setLandmarks(fakeLandmarks);
     }, 33); // 30 FPS
   }, [cleanup]);
 
@@ -580,6 +702,7 @@ export function HandTrackingProvider({ children }) {
         isPinching,
         isFist,
         isPeaceSign,
+        isPalm,
         landmarks,
         isConnected,
         wsUrl,
@@ -588,6 +711,11 @@ export function HandTrackingProvider({ children }) {
         cameraActive,
         videoRef: videoRefCallback,
         canvasRef: canvasRefCallback,
+        twoHandsDetected,
+        twoHandsDistance,
+        twoHandsVerticalDistance,
+        twoHandsFist,
+        twoHandsPalm,
       }}
     >
       {children}
