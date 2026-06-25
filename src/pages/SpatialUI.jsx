@@ -1202,18 +1202,6 @@ function Turbine({ explode }) {
         receiveShadow
         ref={objRef}
         object={scene}
-        onPointerOver={(e) => {
-          e.stopPropagation();
-          if (e.object.isMesh) {
-            e.object.userData.originHex = e.object.material.emissive?.getHex() || 0;
-            e.object.material.emissive?.setHex(0x3b82f6);
-          }
-        }}
-        onPointerOut={(e) => {
-          if (e.object.isMesh) {
-            e.object.material.emissive?.setHex(e.object.userData.originHex || 0);
-          }
-        }}
       />
     </group>
   );
