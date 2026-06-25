@@ -18,9 +18,9 @@ export default function HandHologram() {
   const { handDetected, landmarks, isPinching } = useHandTracking();
   const [smoothedPoints, setSmoothedPoints] = useState([]);
   const smoothedRef = useRef([]);
-  const velocitiesRef = useRef(Array.from({ length: 21 }, () => new THREE.Vector3()));
 
   // Map raw landmarks to target THREE.Vector3 coordinates in the 3D space
+  // Added strict NaN filtering to prevent numeric divergence and crashes
   const targets = useMemo(() => {
     if (!landmarks || landmarks.length < 21) return [];
 
@@ -29,21 +29,26 @@ export default function HandHologram() {
     const scaleY = 2.6;
     const scaleZ = 4.0;
 
-    return landmarks.map((lm) => {
+    const list = [];
+    for (let i = 0; i < 21; i++) {
+      const lm = landmarks[i];
+      if (!lm || isNaN(lm.x) || isNaN(lm.y) || isNaN(lm.z)) {
+        return []; // If any landmark is invalid or NaN, discard the entire frame to prevent rendering errors
+      }
       // Mirror X so it follows the user's hand correctly
       const x = (1 - lm.x * 2) * scaleX;
       const y = (1 - lm.y * 2) * scaleY;
       const z = -lm.z * scaleZ + 1.2; // Push forward slightly in front of center (Z=0)
-      return new THREE.Vector3(x, y, z);
-    });
+      list.push(new THREE.Vector3(x, y, z));
+    }
+    return list;
   }, [landmarks]);
 
-  // Interpolate joint positions at the monitor's native frame rate (60Hz/120Hz/144Hz) using spring physics
+  // Interpolate joint positions smoothly at the monitor's native frame rate using stable LERP
   useFrame((state, delta) => {
     if (!handDetected || targets.length < 21) {
       if (smoothedRef.current.length > 0) {
         smoothedRef.current = [];
-        velocitiesRef.current = Array.from({ length: 21 }, () => new THREE.Vector3());
         setSmoothedPoints([]);
       }
       return;
@@ -52,36 +57,20 @@ export default function HandHologram() {
     // Initialize with targets directly if first detection to prevent flying-in from origin
     if (smoothedRef.current.length === 0) {
       smoothedRef.current = targets.map(t => t.clone());
-      velocitiesRef.current = Array.from({ length: 21 }, () => new THREE.Vector3());
       setSmoothedPoints(smoothedRef.current);
       return;
     }
 
-    const dt = Math.min(delta, 0.1); // Clamp to prevent explosions
-    const stiffness = 150; // Softer spring to absorb high-frequency camera coordinate noise
-    const damping = 24;    // High damping to make hand joints follow smoothly without shivering
-
-    // Perform smooth spring dampening for each joint
+    // Unconditionally stable exponential moving average (LERP)
+    // Avoids explicit Euler integration instabilities of spring-damper equations
+    const factor = 1 - Math.exp(-22 * Math.min(delta, 0.1));
     let changed = false;
+    
     const nextPoints = smoothedRef.current.map((pt, idx) => {
       const target = targets[idx];
       if (!target) return pt;
 
-      const vel = velocitiesRef.current[idx];
-
-      // Hooke's Law with damping: Acceleration = -k * displacement - c * velocity
-      const forceX = -stiffness * (pt.x - target.x) - damping * vel.x;
-      const forceY = -stiffness * (pt.y - target.y) - damping * vel.y;
-      const forceZ = -stiffness * (pt.z - target.z) - damping * vel.z;
-
-      vel.x += forceX * dt;
-      vel.y += forceY * dt;
-      vel.z += forceZ * dt;
-
-      const nextPt = pt.clone();
-      nextPt.x += vel.x * dt;
-      nextPt.y += vel.y * dt;
-      nextPt.z += vel.z * dt;
+      const nextPt = pt.clone().lerp(target, factor);
 
       // Only trigger state updates if displacement is noticeable to save CPU cycles
       if (pt.distanceToSquared(nextPt) > 0.00001) {
