@@ -6,7 +6,6 @@ import { useNavigate } from 'react-router-dom';
 import * as THREE from 'three';
 import { useHandTracking, TRACKING_MODES } from '../utils/useHandTracking';
 import ErrorBoundary from '../components/ErrorBoundary';
-import HandHologram from '../components/HeroSection3D/HandHologram';
 
 const PageContainer = styled.div`
   min-height: 100vh;
@@ -1990,7 +1989,6 @@ export default function SpatialUI() {
                   enabled={!handDetected}
                   onStart={() => setCameraPreset(null)}
                 />
-                {trackingMode !== TRACKING_MODES.MOUSE && <HandHologram />}
                 <Preload all />
               </Suspense>
             </Canvas>
