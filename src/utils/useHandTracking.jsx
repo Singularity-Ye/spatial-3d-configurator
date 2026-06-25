@@ -395,16 +395,20 @@ export function HandTrackingProvider({ children }) {
       if (h1_data && h2_data) {
         const p1 = h1_landmarks[9];
         const p2 = h2_landmarks[9];
-        const dist = getDistance(p1, p2);
+        const dx = p1.x - p2.x;
+        const dy = p1.y - p2.y;
+        const dz = p1.z - p2.z;
         
         const h1_scale = getDistance(h1_landmarks[0], h1_landmarks[9]) || 0.2;
         const h2_scale = getDistance(h2_landmarks[0], h2_landmarks[9]) || 0.2;
         const avgScale = (h1_scale + h2_scale) / 2;
         
-        const normDist = dist / avgScale;
+        // Decouple zoom from vertical movement: calculate horizontal-only 2D distance for zoom
+        const horizDist = Math.sqrt(dx * dx + dz * dz);
+        const normDist = horizDist / avgScale;
         setTwoHandsDistance(normDist);
 
-        const vertDist = Math.abs(p1.y - p2.y) / avgScale;
+        const vertDist = Math.abs(dy) / avgScale;
         setTwoHandsVerticalDistance(vertDist);
 
         setTwoHandsFist(h1_data.isFist && h2_data.isFist);

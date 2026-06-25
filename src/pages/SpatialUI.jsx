@@ -1555,6 +1555,9 @@ function SpatialScene({
   const peaceTriggeredRef = useRef(false);
   const twoHandsFistStartTimeRef = useRef(null);
   const twoHandsFistTriggeredRef = useRef(false);
+  const palmStartTimeRef = useRef(null);
+  const palmTriggeredRef = useRef(false);
+  const targetRotationRef = useRef({ x: 0.15, y: -0.4 });
 
   const mappingCalculated = useRef(false);
   const turbineMeshCentersRef = useRef({});
@@ -1572,6 +1575,10 @@ function SpatialScene({
     mappingCalculated.current = false;
     turbineMeshCentersRef.current = {};
     setPartMeshIndices({});
+    if (groupRef.current) {
+      groupRef.current.rotation.set(0.15, -0.4, 0);
+    }
+    targetRotationRef.current = { x: 0.15, y: -0.4 };
   }, [activeModel, setPartMeshIndices]);
 
   // Bind WebGL context events for stability logging
@@ -1728,8 +1735,8 @@ function SpatialScene({
           const dx = cursor.x - prevCursorRef.current.x;
           const dy = cursor.y - prevCursorRef.current.y;
           
-          group.rotation.y += dx * 2.8;
-          group.rotation.x = Math.max(-0.65, Math.min(0.65, group.rotation.x + dy * 2.0));
+          targetRotationRef.current.y += dx * 2.8;
+          targetRotationRef.current.x = Math.max(-0.65, Math.min(0.65, targetRotationRef.current.x + dy * 2.0));
           
           prevCursorRef.current = { x: cursor.x, y: cursor.y };
         }
@@ -1737,8 +1744,12 @@ function SpatialScene({
         isFistDraggingRef.current = false;
       }
     } else if (autoRotate) {
-      group.rotation.y += delta * 0.15;
+      targetRotationRef.current.y += delta * 0.15;
     }
+
+    // Smoothly LERP rotation for lag-free inertial drag experience
+    group.rotation.y = THREE.MathUtils.lerp(group.rotation.y, targetRotationRef.current.y, 0.15);
+    group.rotation.x = THREE.MathUtils.lerp(group.rotation.x, targetRotationRef.current.x, 0.15);
 
     // Smoothly LERP camera fov for lens zoom effect
     const targetFov = focusMode ? 30 : fov;
@@ -1872,15 +1883,26 @@ function SpatialScene({
     }
   }, [isPeaceSign, handDetected, trackingMode, twoHandsDetected]);
 
-  // Gesture 7: Open Palm (Palm) -> Cancel dragging / Return to default
+  // Gesture 7: Open Palm (Palm) -> Cancel dragging / Return to default (held for 0.8 seconds to avoid accidental resets)
   useEffect(() => {
     if (isPalm && handDetected && trackingMode !== 'mouse') {
-      setSelectedPartId(null);
-      setFocusMode(false);
-      setHoveredPartId(null);
-      setExplode(0);
+      if (!palmStartTimeRef.current) {
+        palmStartTimeRef.current = Date.now();
+      } else if (!palmTriggeredRef.current) {
+        const elapsed = Date.now() - palmStartTimeRef.current;
+        if (elapsed >= 800) {
+          setSelectedPartId(null);
+          setFocusMode(false);
+          setHoveredPartId(null);
+          setExplode(0);
+          palmTriggeredRef.current = true;
+        }
+      }
+    } else {
+      palmStartTimeRef.current = null;
+      palmTriggeredRef.current = false;
     }
-  }, [isPalm, handDetected, trackingMode]);
+  }, [isPalm, handDetected, trackingMode, setSelectedPartId, setFocusMode, setHoveredPartId, setExplode]);
 
   // Gesture 8: Two-handed Fist hold -> Reset to Home view (held for 0.8 seconds)
   useEffect(() => {
