@@ -917,7 +917,7 @@ const TURBINE_PARTS = {
 };
 
 // 3D Tag and Hotspot Node Component (renders inside R3F)
-function TagNode({ partId, name, position, isSelected, isHovered, onSelect, onHover, explode, desc, partCode }) {
+function TagNode({ partId, name, position, isSelected, isHovered, onSelect, onHover, explode, desc, partCode, isActiveMode = true }) {
   const meshRef = useRef();
 
   useFrame((state) => {
@@ -943,15 +943,15 @@ function TagNode({ partId, name, position, isSelected, isHovered, onSelect, onHo
 
       {/* Large Invisible Hit Target Sphere (low-poly proxy collider for easy hover & click) */}
       <mesh
-        onClick={tagOpacity >= 0.15 ? (e) => {
+        onClick={tagOpacity >= 0.15 && isActiveMode ? (e) => {
           e.stopPropagation();
           onSelect();
         } : undefined}
-        onPointerOver={tagOpacity >= 0.15 ? (e) => {
+        onPointerOver={tagOpacity >= 0.15 && isActiveMode ? (e) => {
           e.stopPropagation();
           onHover(partId);
         } : undefined}
-        onPointerOut={tagOpacity >= 0.15 ? (e) => {
+        onPointerOut={tagOpacity >= 0.15 && isActiveMode ? (e) => {
           e.stopPropagation();
           onHover(null);
         } : undefined}
@@ -973,13 +973,17 @@ function TagNode({ partId, name, position, isSelected, isHovered, onSelect, onHo
 
       {/* Floating Leader Line */}
       {isSelected && (
-        <Line
-          points={[[0, 0, 0], labelOffset]}
-          color="#3b82f6"
-          lineWidth={1.2}
-          transparent
-          opacity={0.5}
-        />
+        <line>
+          <bufferGeometry attach="geometry">
+            <bufferAttribute
+              attach="attributes-position"
+              count={2}
+              array={new Float32Array([0, 0, 0, labelOffset[0], labelOffset[1], labelOffset[2]])}
+              itemSize={3}
+            />
+          </bufferGeometry>
+          <lineBasicMaterial attach="material" color="#3b82f6" transparent opacity={0.5} />
+        </line>
       )}
 
       {/* Floating 3D Label Tag */}
@@ -2020,6 +2024,7 @@ export default function SpatialUI() {
   // Hand gesture-driven explode control
   const lastYRef = useRef(0);
   const isDraggingRef = useRef(false);
+  const lastExplodeTimeRef = useRef(0);
 
   useEffect(() => {
     if (trackingMode !== 'mouse' && handDetected) {
@@ -2028,10 +2033,14 @@ export default function SpatialUI() {
           isDraggingRef.current = true;
           lastYRef.current = cursor.y;
         } else {
-          const dy = cursor.y - lastYRef.current;
-          // Pull up to explode, push down to assemble
-          setExplodeAmount(prev => Math.max(0, Math.min(1, prev + dy * 2.2)));
-          lastYRef.current = cursor.y;
+          const now = Date.now();
+          if (now - lastExplodeTimeRef.current > 33) { // Throttle setState to ~30 FPS
+            const dy = cursor.y - lastYRef.current;
+            // Pull up to explode, push down to assemble (using 0.14 coefficient)
+            setExplodeAmount(prev => Math.max(0, Math.min(1, prev + dy * 0.14)));
+            lastYRef.current = cursor.y;
+            lastExplodeTimeRef.current = now;
+          }
         }
       } else {
         isDraggingRef.current = false;
