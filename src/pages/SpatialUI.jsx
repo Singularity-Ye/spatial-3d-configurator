@@ -1223,6 +1223,8 @@ function SpatialScene({
 }) {
   const groupRef = useRef();
   const tickRingRef = useRef();
+  const isPinchingRef = useRef(false);
+  const prevCursorRef = useRef({ x: 0, y: 0 });
 
   const { cursor, handDetected, trackingMode, isPinching } = useHandTracking();
 
@@ -1235,9 +1237,26 @@ function SpatialScene({
     if (trackingMode !== 'mouse' && handDetected) {
       state.pointer.set(cursor.x, cursor.y);
       
-      // Control 3D group rotation smoothly via air hand movement coords
-      group.rotation.y = THREE.MathUtils.lerp(group.rotation.y, cursor.x * Math.PI, 0.08);
-      group.rotation.x = THREE.MathUtils.lerp(group.rotation.x, cursor.y * Math.PI * 0.2, 0.08);
+      // Control 3D group rotation via air hand movement ONLY when pinching (pinch-to-rotate)
+      // We ignore pinch starts below cursor.y = -0.55 to prevent conflicts when dragging the bottom slider/controls
+      if (isPinching) {
+        if (!isPinchingRef.current) {
+          if (cursor.y > -0.55) {
+            isPinchingRef.current = true;
+            prevCursorRef.current = { x: cursor.x, y: cursor.y };
+          }
+        } else {
+          const dx = cursor.x - prevCursorRef.current.x;
+          const dy = cursor.y - prevCursorRef.current.y;
+          
+          group.rotation.y += dx * 2.8;
+          group.rotation.x = Math.max(-0.65, Math.min(0.65, group.rotation.x + dy * 2.0));
+          
+          prevCursorRef.current = { x: cursor.x, y: cursor.y };
+        }
+      } else {
+        isPinchingRef.current = false;
+      }
     } else if (autoRotate) {
       group.rotation.y += delta * 0.15;
     }
@@ -1399,71 +1418,48 @@ function SpatialScene({
 
   return (
     <>
-      {/* Deep blue tech studio ambient lights */}
-      <ambientLight intensity={ambientIntensity} color="#0a182c" />
-      <hemisphereLight skyColor="#00d2ff" groundColor="#0f2b46" intensity={hemisphereIntensity} />
+      {/* Clean neutral studio ambient lights */}
+      <ambientLight intensity={0.7} color="#ffffff" />
+      <hemisphereLight skyColor="#ffffff" groundColor="#dddddd" intensity={0.8} />
       
-      {/* Key Light (Strong cyan studio light) */}
+      {/* Key Light (Neutral white studio light) */}
       <directionalLight 
         position={[8, 12, 8]} 
-        intensity={keyLightIntensity} 
-        color="#00d2ff" 
+        intensity={1.8} 
+        color="#ffffff" 
         castShadow 
       />
 
-      {/* Fill Light (Soft purple tint) */}
+      {/* Fill Light (Neutral cool fill) */}
       <directionalLight 
         position={[-8, 4, 8]} 
-        intensity={2.0} 
-        color="#b026ff" 
+        intensity={0.8} 
+        color="#eaeaea" 
       />
 
-      {/* Bounce Light */}
+      {/* Bounce Light (Neutral ground bounce) */}
       <directionalLight 
         position={[0, -5, 0]} 
-        intensity={1.0} 
-        color="#0f2b46" 
+        intensity={0.4} 
+        color="#dddddd" 
       />
 
-      <Environment files="/hdr/venice_sunset_1k.hdr" intensity={0.5} />
-
-      {/* Cyber floating particles for high-tech overlay atmosphere */}
-      <Sparkles count={50} scale={3.6} size={1.8} speed={0.35} color="#00f0ff" opacity={0.65} />
+      {/* Enable environment background and blur for realistic grey gradient studio skybox */}
+      <Environment files="/hdr/venice_sunset_1k.hdr" background blur={0.8} intensity={1.2} />
 
       {/* Tech Grid on the floor */}
       <Grid
         infiniteGrid
         renderOrder={-1}
         position={[0, gridY, 0]}
-        cellSize={0.5}
-        cellThickness={0.5}
-        sectionSize={2.5}
-        sectionThickness={1.0}
-        sectionColor="#005577"
-        cellColor="#002233"
-        fadeDistance={20}
+        cellSize={0.6}
+        cellThickness={0.6}
+        sectionSize={3.3}
+        sectionThickness={1.5}
+        sectionColor="#a0aab8"
+        cellColor="#e2e8f0"
+        fadeDistance={30}
       />
-
-      {/* Concentric Hologram Rings */}
-      <group position={[0, gridY + 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <mesh>
-          <ringGeometry args={[0.8, 0.81, 64]} />
-          <meshBasicMaterial color="#00f0ff" transparent opacity={0.35} side={THREE.DoubleSide} />
-        </mesh>
-        <mesh>
-          <ringGeometry args={[1.2, 1.205, 64]} />
-          <meshBasicMaterial color="#00f0ff" transparent opacity={0.18} side={THREE.DoubleSide} />
-        </mesh>
-        <mesh>
-          <ringGeometry args={[1.5, 1.502, 64]} />
-          <meshBasicMaterial color="#00f0ff" transparent opacity={0.08} side={THREE.DoubleSide} />
-        </mesh>
-        {/* Rotating tick ring */}
-        <mesh ref={tickRingRef}>
-          <ringGeometry args={[0.95, 1.0, 32]} />
-          <meshBasicMaterial color="#00f0ff" wireframe transparent opacity={0.22} side={THREE.DoubleSide} />
-        </mesh>
-      </group>
       
       <group 
         ref={groupRef} 
