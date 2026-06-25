@@ -1581,6 +1581,11 @@ function SpatialScene({
     targetRotationRef.current = { x: 0.15, y: -0.4 };
   }, [activeModel, setPartMeshIndices]);
 
+  // Recalculate mesh mappings when custom turbine parts change
+  useEffect(() => {
+    mappingCalculated.current = false;
+  }, [customTurbineParts]);
+
   // Bind WebGL context events for stability logging
   useEffect(() => {
     const canvas = gl.domElement;
@@ -2081,9 +2086,17 @@ function SpatialScene({
           if (activeModel === 'turbine') {
             const centerArr = turbineMeshCentersRef.current[id];
             if (centerArr) {
+              const meshIndex = partMeshIndices[id];
+              let offset = 0;
+              if (meshIndex !== undefined && meshIndex >= 0) {
+                const childrenLength = turbineRef.current ? turbineRef.current.children.length : 13;
+                const mid = (childrenLength - 1) / 2;
+                const step = 0.15;
+                offset = (meshIndex - mid) * step * explode;
+              }
               // Apply the scaling (1.2), position [0, -0.6, 0] and rotation [0, PI/2, 0] of the parent group
               explodedPos = [
-                centerArr[2] * 1.2,
+                (centerArr[2] + offset) * 1.2,
                 centerArr[1] * 1.2 - 0.6,
                 -centerArr[0] * 1.2
               ];
