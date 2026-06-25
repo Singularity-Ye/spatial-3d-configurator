@@ -1,4 +1,4 @@
-import React, { useState, useRef, Suspense, useEffect, useCallback } from 'react';
+import React, { useState, useRef, Suspense, useEffect, useCallback, useMemo } from 'react';
 import styled from 'styled-components';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Preload, OrbitControls, Line, Html, Clone, useGLTF, Grid, Environment, Sparkles } from '@react-three/drei';
@@ -1231,6 +1231,37 @@ const getTurbinePartLocalPos = (id) => {
 function Turbine({ explode, turbineRef, configMode, selectedMeshIdx, hoveredMeshIdx }) {
   const { scene } = useGLTF("/model/glb/turbine.glb");
 
+  // Pre-allocate materials once using useMemo to prevent WebGL memory leak
+  const selectedMaterial = useMemo(() => new THREE.MeshStandardMaterial({
+    color: '#d97706',
+    emissive: '#78350f',
+    roughness: 0.1,
+    metalness: 0.8
+  }), []);
+
+  const hoveredMaterial = useMemo(() => new THREE.MeshStandardMaterial({
+    color: '#2563eb',
+    emissive: '#1d4ed8',
+    roughness: 0.2,
+    metalness: 0.5
+  }), []);
+
+  const transparentMaterial = useMemo(() => new THREE.MeshPhysicalMaterial({
+    color: '#475569',
+    transparent: true,
+    opacity: 0.18,
+    depthWrite: false
+  }), []);
+
+  // Clean up materials on unmount to prevent GPU resource leaks
+  useEffect(() => {
+    return () => {
+      selectedMaterial.dispose();
+      hoveredMaterial.dispose();
+      transparentMaterial.dispose();
+    };
+  }, [selectedMaterial, hoveredMaterial, transparentMaterial]);
+
   useFrame((state, delta) => {
     if (!turbineRef.current) return;
     
@@ -1274,29 +1305,11 @@ function Turbine({ explode, turbineRef, configMode, selectedMeshIdx, hoveredMesh
 
         if (configMode) {
           if (index === selectedMeshIdx) {
-            // Selected mesh: bright solid gold
-            child.material = new THREE.MeshStandardMaterial({
-              color: '#d97706',
-              emissive: '#78350f',
-              roughness: 0.1,
-              metalness: 0.8
-            });
+            child.material = selectedMaterial;
           } else if (index === hoveredMeshIdx) {
-            // Hovered mesh: royal blue
-            child.material = new THREE.MeshStandardMaterial({
-              color: '#2563eb',
-              emissive: '#1d4ed8',
-              roughness: 0.2,
-              metalness: 0.5
-            });
+            child.material = hoveredMaterial;
           } else {
-            // Semi-transparent other meshes
-            child.material = new THREE.MeshPhysicalMaterial({
-              color: '#475569',
-              transparent: true,
-              opacity: 0.18,
-              depthWrite: false
-            });
+            child.material = transparentMaterial;
           }
         } else {
           // Restore original material
@@ -1304,7 +1317,7 @@ function Turbine({ explode, turbineRef, configMode, selectedMeshIdx, hoveredMesh
         }
       }
     });
-  }, [configMode, selectedMeshIdx, hoveredMeshIdx, turbineRef, scene]);
+  }, [configMode, selectedMeshIdx, hoveredMeshIdx, turbineRef, selectedMaterial, hoveredMaterial, transparentMaterial]);
 
   return (
     <group scale={1.2} position={[0, -0.6, 0]} rotation={[0, Math.PI / 2, 0]}>

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useRef, useMemo, useEffect } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import { useHandTracking } from '../../utils/useHandTracking';
@@ -12,13 +12,15 @@ const FINGER_CONNECTIONS = {
   palm: [5, 9, 13, 17, 0]
 };
 
-function SingleHandHologram({ handLandmarks, isPinching }) {
-  const [smoothedPoints, setSmoothedPoints] = useState([]);
+function SingleHandHologram({ handLandmarks, isPinching, visible }) {
+  const groupRef = useRef();
+  const jointsRef = useRef([]);
+  const linesRef = useRef({});
   const smoothedRef = useRef([]);
 
   // Map raw landmarks to target THREE.Vector3 coordinates in the 3D space
   const targets = useMemo(() => {
-    if (!handLandmarks || handLandmarks.length < 21) return [];
+    if (!visible || !handLandmarks || handLandmarks.length < 21) return [];
 
     const scaleX = 3.6;
     const scaleY = 2.6;
@@ -36,95 +38,112 @@ function SingleHandHologram({ handLandmarks, isPinching }) {
       list.push(new THREE.Vector3(x, y, z));
     }
     return list;
-  }, [handLandmarks]);
+  }, [handLandmarks, visible]);
 
-  // Interpolate joint positions smoothly using LERP
+  // Interpolate joint positions smoothly using LERP and update geometries/meshes directly
   useFrame((state, delta) => {
-    if (targets.length < 21) {
-      if (smoothedRef.current.length > 0) {
-        smoothedRef.current = [];
-        setSmoothedPoints([]);
-      }
+    const group = groupRef.current;
+    if (!group) return;
+
+    if (!visible || targets.length < 21) {
+      group.visible = false;
       return;
     }
+
+    group.visible = true;
 
     if (smoothedRef.current.length === 0) {
       smoothedRef.current = targets.map(t => t.clone());
-      setSmoothedPoints(smoothedRef.current);
-      return;
+    } else {
+      const factor = 1 - Math.exp(-22 * Math.min(delta, 0.1));
+      smoothedRef.current = smoothedRef.current.map((pt, idx) => {
+        const target = targets[idx];
+        return target ? pt.clone().lerp(target, factor) : pt;
+      });
     }
 
-    const factor = 1 - Math.exp(-22 * Math.min(delta, 0.1));
-    let changed = false;
-    
-    const nextPoints = smoothedRef.current.map((pt, idx) => {
-      const target = targets[idx];
-      if (!target) return pt;
+    const nextPoints = smoothedRef.current;
 
-      const nextPt = pt.clone().lerp(target, factor);
-      if (pt.distanceToSquared(nextPt) > 0.00001) {
-        changed = true;
-      }
-      return nextPt;
-    });
-
-    if (changed || smoothedPoints.length === 0) {
-      smoothedRef.current = nextPoints;
-      setSmoothedPoints(nextPoints);
-    }
-  });
-
-  if (smoothedPoints.length < 21) return null;
-
-  // Render finger lines and joint spheres
-  // Replaced Drei <Line> with native <line> to avoid LineMaterial shader errors causing WebGL context loss
-  const fingerLines = Object.entries(FINGER_CONNECTIONS).map(([fingerName, indices]) => {
-    const points = indices.map(idx => smoothedPoints[idx]);
-    const lineColor = isPinching ? '#10b981' : '#00f0ff';
-    
-    // Flatten Vector3 points to Float32Array
-    const vertexArray = new Float32Array(points.flatMap(p => [p.x, p.y, p.z]));
-
-    return (
-      <line key={fingerName}>
-        <bufferGeometry attach="geometry">
-          <bufferAttribute
-            attach="attributes-position"
-            count={points.length}
-            array={vertexArray}
-            itemSize={3}
-          />
-        </bufferGeometry>
-        <lineBasicMaterial
-          attach="material"
-          color={lineColor}
-          transparent
-          opacity={0.82}
-          blending={THREE.AdditiveBlending}
-          depthTest={false}
-        />
-      </line>
-    );
-  });
-
-  return (
-    <group>
-      {/* 1. Finger connection lines */}
-      {fingerLines}
-
-      {/* 2. Joint points */}
-      {smoothedPoints.map((pt, idx) => {
-        const isTip = idx === 4 || idx === 8;
-        const color = isTip 
+    // 1. Update joint positions and material colors in-place
+    for (let i = 0; i < 21; i++) {
+      const mesh = jointsRef.current[i];
+      if (mesh) {
+        mesh.position.copy(nextPoints[i]);
+        const isTip = i === 4 || i === 8;
+        const colorStr = isTip 
           ? (isPinching ? '#ef4444' : '#ff7b54') 
           : '#00f0ff';
+        if (mesh.material) {
+          mesh.material.color.set(colorStr);
+        }
+      }
+    }
+
+    // 2. Update line coordinates and colors in-place
+    Object.entries(FINGER_CONNECTIONS).forEach(([fingerName, indices]) => {
+      const line = linesRef.current[fingerName];
+      if (line) {
+        const posAttr = line.geometry.getAttribute('position');
+        const array = posAttr.array;
+        
+        indices.forEach((idx, i) => {
+          const pt = nextPoints[idx];
+          if (pt) {
+            array[i * 3] = pt.x;
+            array[i * 3 + 1] = pt.y;
+            array[i * 3 + 2] = pt.z;
+          }
+        });
+        
+        posAttr.needsUpdate = true;
+        
+        const lineColor = isPinching ? '#10b981' : '#00f0ff';
+        if (line.material) {
+          line.material.color.set(lineColor);
+        }
+      }
+    });
+  });
+
+  // Reset smoothing state on visibility toggle
+  useEffect(() => {
+    if (!visible) {
+      smoothedRef.current = [];
+    }
+  }, [visible]);
+
+  return (
+    <group ref={groupRef} visible={false}>
+      {/* 1. Finger connection lines (rendered once, coordinates updated in useFrame) */}
+      {Object.keys(FINGER_CONNECTIONS).map((fingerName) => (
+        <line key={fingerName} ref={(el) => { if (el) linesRef.current[fingerName] = el; }}>
+          <bufferGeometry attach="geometry">
+            <bufferAttribute
+              attach="attributes-position"
+              count={FINGER_CONNECTIONS[fingerName].length}
+              array={new Float32Array(FINGER_CONNECTIONS[fingerName].length * 3)}
+              itemSize={3}
+            />
+          </bufferGeometry>
+          <lineBasicMaterial
+            attach="material"
+            transparent
+            opacity={0.82}
+            blending={THREE.AdditiveBlending}
+            depthTest={false}
+          />
+        </line>
+      ))}
+
+      {/* 2. Joint points (rendered once, positions updated in useFrame) */}
+      {Array.from({ length: 21 }).map((_, idx) => {
+        const isTip = idx === 4 || idx === 8;
         const size = isTip ? 0.055 : 0.038;
 
         return (
-          <mesh key={idx} position={pt} depthTest={false}>
+          <mesh key={idx} ref={(el) => { if (el) jointsRef.current[idx] = el; }} depthTest={false}>
             <sphereGeometry args={[size, 12, 12]} />
             <meshBasicMaterial
-              color={color}
               transparent
               opacity={0.9}
               blending={THREE.AdditiveBlending}
@@ -139,20 +158,26 @@ function SingleHandHologram({ handLandmarks, isPinching }) {
 export default function HandHologram() {
   const { handDetected, landmarks, isPinching } = useHandTracking();
 
-  if (!handDetected || !landmarks || landmarks.length === 0) return null;
-
-  // Handle both single hand arrays and nested multi-hand arrays
-  const handsArray = Array.isArray(landmarks[0]) ? landmarks : [landmarks];
+  // Always keep both hand components mounted and toggle visibility to prevent context lost
+  const primaryHandLandmarks = landmarks && landmarks.length > 0
+    ? (Array.isArray(landmarks[0]) ? landmarks[0] : landmarks)
+    : null;
+  const secondaryHandLandmarks = landmarks && landmarks.length > 1
+    ? landmarks[1]
+    : null;
 
   return (
     <group>
-      {handsArray.map((handLandmarks, idx) => (
-        <SingleHandHologram
-          key={idx}
-          handLandmarks={handLandmarks}
-          isPinching={idx === 0 ? isPinching : false} // Only apply pinch highlight to the primary hand
-        />
-      ))}
+      <SingleHandHologram
+        handLandmarks={primaryHandLandmarks}
+        isPinching={isPinching}
+        visible={!!(handDetected && primaryHandLandmarks)}
+      />
+      <SingleHandHologram
+        handLandmarks={secondaryHandLandmarks}
+        isPinching={false}
+        visible={!!(handDetected && secondaryHandLandmarks)}
+      />
     </group>
   );
 }
