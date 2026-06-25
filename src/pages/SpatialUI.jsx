@@ -1,7 +1,7 @@
 import React, { useState, useRef, Suspense, useEffect, useCallback, useMemo } from 'react';
 import styled from 'styled-components';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Preload, OrbitControls, Line, Html, Clone, useGLTF, Grid, Environment, Sparkles } from '@react-three/drei';
+import { Preload, OrbitControls, Line, Html, useGLTF, Grid, Environment, Sparkles } from '@react-three/drei';
 import { useNavigate } from 'react-router-dom';
 import * as THREE from 'three';
 import { useHandTracking, TRACKING_MODES } from '../utils/useHandTracking';
@@ -1169,6 +1169,22 @@ function TagNode({ partId, name, position, isSelected, isHovered, onSelect, onHo
   );
 }
 
+const MemoizedTagNode = React.memo(TagNode, (prevProps, nextProps) => {
+  return (
+    prevProps.partId === nextProps.partId &&
+    prevProps.name === nextProps.name &&
+    prevProps.isSelected === nextProps.isSelected &&
+    prevProps.isHovered === nextProps.isHovered &&
+    prevProps.explode === nextProps.explode &&
+    prevProps.desc === nextProps.desc &&
+    prevProps.partCode === nextProps.partCode &&
+    prevProps.isActiveMode === nextProps.isActiveMode &&
+    prevProps.position[0] === nextProps.position[0] &&
+    prevProps.position[1] === nextProps.position[1] &&
+    prevProps.position[2] === nextProps.position[2]
+  );
+});
+
 // Procedural Refrigerator Model
 function Refrigerator({ explode }) {
   const ref = useRef();
@@ -1261,6 +1277,8 @@ function Refrigerator({ explode }) {
     </group>
   );
 }
+
+const MemoizedRefrigerator = React.memo(Refrigerator);
 
 // Procedural Battery Model
 function Battery({ explode }) {
@@ -1363,6 +1381,8 @@ function Battery({ explode }) {
   );
 }
 
+const MemoizedBattery = React.memo(Battery);
+
 // Helper to map Turbine part IDs to their initial local coordinates in the GLB
 const getTurbinePartLocalPos = (id) => {
   switch (id) {
@@ -1379,6 +1399,19 @@ const getTurbinePartLocalPos = (id) => {
 // Procedural high-fidelity Wind Turbine Model loaded from GLB
 function Turbine({ explode, turbineRef, configMode, selectedMeshIdx, hoveredMeshIdx }) {
   const { scene } = useGLTF("/model/glb/turbine.glb");
+
+  // Create a single stable clone of the GLB scene to prevent geometries recreation on every render
+  const clonedScene = useMemo(() => {
+    const clone = scene.clone();
+    // Enable shadows on all child meshes
+    clone.traverse((child) => {
+      if (child.isMesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+      }
+    });
+    return clone;
+  }, [scene]);
 
   // Pre-allocate materials once using useMemo to prevent WebGL memory leak
   const selectedMaterial = useMemo(() => new THREE.MeshStandardMaterial({
@@ -1470,16 +1503,15 @@ function Turbine({ explode, turbineRef, configMode, selectedMeshIdx, hoveredMesh
 
   return (
     <group scale={1.2} position={[0, -0.6, 0]} rotation={[0, Math.PI / 2, 0]}>
-      <Clone
-        deep
-        castShadow
-        receiveShadow
+      <primitive
         ref={turbineRef}
-        object={scene}
+        object={clonedScene}
       />
     </group>
   );
 }
+
+const MemoizedTurbine = React.memo(Turbine);
 
 // Scene controller that binds models, rotation physics, and hotspots
 function SpatialScene({
@@ -2005,11 +2037,11 @@ function SpatialScene({
         {/* Render selected model inside a group that has raycasting disabled */}
         <group ref={modelGroupRef}>
           {activeModel === 'fridge' ? (
-            <Refrigerator explode={explode} />
+            <MemoizedRefrigerator explode={explode} />
           ) : activeModel === 'battery' ? (
-            <Battery explode={explode} />
+            <MemoizedBattery explode={explode} />
           ) : (
-            <Turbine 
+            <MemoizedTurbine 
               explode={explode} 
               turbineRef={turbineRef} 
               configMode={configMode}
@@ -2037,7 +2069,7 @@ function SpatialScene({
           }
 
           return (
-            <TagNode
+            <MemoizedTagNode
               key={id}
               partId={id}
               name={item.name}
@@ -2076,7 +2108,7 @@ function SpatialScene({
               
               if (!isAlreadyTagged) {
                 return (
-                  <TagNode
+                  <MemoizedTagNode
                     key="temp-config-tag"
                     partId="?"
                     name="待配置网格"
