@@ -10,10 +10,8 @@ import ErrorBoundary from '../components/ErrorBoundary';
 const PageContainer = styled.div`
   min-height: 100vh;
   width: 100%;
-  background:
-    radial-gradient(circle at 50% 42%, rgba(40, 80, 120, 0.32), transparent 42%),
-    linear-gradient(180deg, #0a101c 0%, #05070d 100%);
-  color: #f1f5f9;
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
+  color: #1e293b;
   font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   overflow: hidden;
   position: relative;
@@ -26,11 +24,11 @@ const Header = styled.header`
   align-items: center;
   justify-content: space-between;
   padding: 1.1rem 2rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(20, 23, 30, 0.85);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(16px);
   z-index: 10;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03), 0 1px 2px rgba(15, 23, 42, 0.06);
 
   .logo-section {
     display: flex;
@@ -44,31 +42,30 @@ const Header = styled.header`
 
     h1 {
       margin: 0;
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       font-weight: 700;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      color: #ffffff;
+      letter-spacing: -0.01em;
+      color: #0f172a;
     }
   }
 
   .nav-back {
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #cbd5e1;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    color: #475569;
     padding: 0.45rem 1rem;
-    font-size: 0.72rem;
+    font-size: 0.75rem;
     font-weight: 600;
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.2s ease;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.02em;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.08);
-      border-color: rgba(255, 255, 255, 0.4);
-      color: #ffffff;
+      background: rgba(0, 0, 0, 0.04);
+      border-color: rgba(0, 0, 0, 0.2);
+      color: #0f172a;
     }
   }
 `;
@@ -120,9 +117,9 @@ const Sidebar = styled.section`
   }
 
   button.option {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    color: #cbd5e1;
+    background: rgba(0, 0, 0, 0.02);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    color: #475569;
     border-radius: 6px;
     padding: 0.6rem 1rem;
     font-size: 0.75rem;
@@ -132,14 +129,14 @@ const Sidebar = styled.section`
     transition: all 0.2s ease;
 
     &:hover {
-      background: rgba(37, 99, 235, 0.08);
-      border-color: rgba(37, 99, 235, 0.4);
-      color: #fff;
+      background: rgba(37, 99, 235, 0.05);
+      border-color: rgba(37, 99, 235, 0.3);
+      color: #1e293b;
     }
 
     &.active {
       background: #2563eb;
-      border-color: #3b82f6;
+      border-color: #2563eb;
       color: #fff;
     }
   }
@@ -151,7 +148,7 @@ const Sidebar = styled.section`
 
     label {
       font-size: 0.7rem;
-      color: #94a3b8;
+      color: #64748b;
       display: flex;
       justify-content: space-between;
     }
@@ -161,7 +158,7 @@ const Sidebar = styled.section`
       width: 100%;
       height: 4px;
       border-radius: 2px;
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(0, 0, 0, 0.08);
       outline: none;
 
       &::-webkit-slider-thumb {
@@ -169,7 +166,7 @@ const Sidebar = styled.section`
         width: 14px;
         height: 14px;
         border-radius: 50%;
-        background: #3b82f6;
+        background: #2563eb;
         cursor: pointer;
         transition: transform 0.1s;
 
@@ -183,7 +180,7 @@ const Sidebar = styled.section`
   .tech-info {
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.68rem;
-    color: #94a3b8;
+    color: #64748b;
     line-height: 1.45;
   }
 `;
@@ -210,26 +207,26 @@ const CanvasContainer = styled.div`
     bottom: 1.5rem;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(15, 17, 23, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(0, 0, 0, 0.06);
     border-radius: 8px;
     padding: 0.6rem 1rem;
-    font-size: 0.7rem;
-    color: #e2e8f0;
+    font-size: 0.72rem;
+    color: #334155;
     pointer-events: none;
     backdrop-filter: blur(12px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
     white-space: nowrap;
     z-index: 5;
   }
 `;
 
 const HudCard = styled.div`
-  background: rgba(10, 16, 27, 0.72);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(80, 180, 255, 0.18);
-  box-shadow: inset 0 0 18px rgba(80, 180, 255, 0.05), 0 18px 40px rgba(0, 0, 0, 0.38);
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04), 0 12px 30px rgba(15, 23, 42, 0.06);
   border-radius: 12px;
   padding: 1rem;
   display: flex;
@@ -246,34 +243,33 @@ const HudCard = styled.div`
     left: 0;
     right: 0;
     height: 2px;
-    background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.35), transparent);
+    background: linear-gradient(90deg, transparent, rgba(37, 99, 235, 0.35), transparent);
     opacity: 0.7;
   }
 
   &:hover {
-    border-color: rgba(80, 180, 255, 0.35);
-    box-shadow: inset 0 0 24px rgba(80, 180, 255, 0.08), 0 20px 45px rgba(0, 0, 0, 0.45);
+    border-color: rgba(37, 99, 235, 0.25);
+    box-shadow: 0 6px 24px rgba(15, 23, 42, 0.05), 0 16px 36px rgba(15, 23, 42, 0.08);
     &::before {
-      background: linear-gradient(90deg, transparent, #00f0ff, transparent);
+      background: linear-gradient(90deg, transparent, #2563eb, transparent);
       opacity: 1;
     }
   }
 
   h3 {
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     font-weight: 700;
-    text-transform: uppercase;
-    color: #f1f5f9;
+    color: #0f172a;
     border-left: 3px solid #2563eb;
-    padding-left: 0.4rem;
+    padding-left: 0.5rem;
     margin: 0;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.02em;
   }
 
   .tech-info {
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.65rem;
-    color: #94a3b8;
+    color: #475569;
     line-height: 1.45;
   }
 
@@ -281,7 +277,7 @@ const HudCard = styled.div`
   .progress-bar-container {
     width: 100%;
     height: 4px;
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.06);
     border-radius: 2px;
     overflow: hidden;
     margin-top: 0.2rem;
@@ -290,7 +286,6 @@ const HudCard = styled.div`
   .progress-bar-fill {
     height: 100%;
     background: #2563eb;
-    box-shadow: 0 0 8px #3b82f6;
   }
 
   /* Sparkline row style */
@@ -300,7 +295,7 @@ const HudCard = styled.div`
     align-items: center;
     font-size: 0.62rem;
     font-family: 'JetBrains Mono', monospace;
-    color: #94a3b8;
+    color: #475569;
   }
 `;
 
@@ -309,29 +304,29 @@ const TagLabel = styled.div`
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  background: ${props => props.$selected ? 'rgba(37, 99, 235, 0.92)' : 'rgba(10, 16, 27, 0.75)'};
-  border: 1px solid ${props => props.$selected ? '#ffffff' : 'rgba(80, 180, 255, 0.35)'};
+  background: ${props => props.$selected ? '#2563eb' : 'rgba(255, 255, 255, 0.92)'};
+  border: 1px solid ${props => props.$selected ? '#2563eb' : 'rgba(0, 0, 0, 0.08)'};
   border-radius: 4px;
   padding: 0.2rem 0.45rem;
-  color: #fff;
+  color: ${props => props.$selected ? '#ffffff' : '#1e293b'};
   font-family: 'Outfit', sans-serif;
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
   pointer-events: auto;
   transition: all 0.2s ease;
   user-select: none;
-  box-shadow: ${props => props.$selected ? '0 0 15px rgba(37, 99, 235, 0.6), 0 4px 12px rgba(0, 0, 0, 0.4)' : '0 4px 12px rgba(0, 0, 0, 0.3)'};
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
 
   &:hover {
-    background: rgba(37, 99, 235, 0.85);
-    border-color: #fff;
-    box-shadow: 0 0 10px rgba(0, 240, 255, 0.35);
+    background: ${props => props.$selected ? '#1d4ed8' : '#f8fafc'};
+    border-color: ${props => props.$selected ? '#1d4ed8' : 'rgba(0, 0, 0, 0.15)'};
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
   }
 
   .num {
-    color: ${props => props.$selected ? '#fff' : '#00d2ff'};
+    color: ${props => props.$selected ? '#fff' : '#2563eb'};
     font-family: 'JetBrains Mono', monospace;
     font-weight: 800;
   }
@@ -342,10 +337,10 @@ const EdgeTab = styled.button`
   top: 50%;
   transform: translateY(-50%);
   ${props => props.$left ? `left: ${props.$collapsed ? '0.5rem' : '305px'};` : `right: ${props.$collapsed ? '0.5rem' : '305px'};`}
-  background: rgba(10, 16, 27, 0.85);
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(80, 180, 255, 0.22);
-  color: #00f0ff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  color: #475569;
   font-family: 'Outfit', sans-serif;
   font-size: 0.6rem;
   font-weight: 700;
@@ -357,11 +352,12 @@ const EdgeTab = styled.button`
   cursor: pointer;
   z-index: 10;
   transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
 
   &:hover {
-    background: rgba(37, 99, 235, 0.18);
-    border-color: #00f0ff;
+    background: #f8fafc;
+    color: #2563eb;
+    border-color: rgba(37, 99, 235, 0.3);
   }
 
   @media (max-width: 968px) {
@@ -374,12 +370,12 @@ const DetailTooltip = styled.div`
   top: 100%;
   left: 50%;
   transform: ${props => props.$visible ? 'translate(-50%, 6px)' : 'translate(-50%, 16px)'};
-  background: rgba(10, 16, 27, 0.92);
-  border: 1px solid rgba(80, 180, 255, 0.4);
-  box-shadow: 0 8px 24px rgba(0, 240, 255, 0.2), inset 0 0 10px rgba(80, 180, 255, 0.15);
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.08);
   border-radius: 6px;
   padding: 0.5rem;
-  color: #fff;
+  color: #1e293b;
   font-family: 'Outfit', sans-serif;
   width: 190px;
   white-space: normal;
@@ -390,18 +386,19 @@ const DetailTooltip = styled.div`
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 
   .tooltip-title {
-    font-size: 0.65rem;
+    font-size: 0.7rem;
     font-weight: 700;
-    color: #00f0ff;
-    margin-bottom: 0.25rem;
+    color: #2563eb;
+    margin-bottom: 0.3rem;
     display: flex;
     justify-content: space-between;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: 0.02em;
   }
   .tooltip-desc {
-    font-size: 0.62rem;
-    color: #cbd5e1;
-    line-height: 1.4;
+    font-size: 0.68rem;
+    color: #334155;
+    line-height: 1.5;
   }
 `;
 
@@ -881,18 +878,18 @@ function Refrigerator({ explode }) {
 
   return (
     <group ref={ref}>
-      {/* 1. Main Cabinet Shell (Translucent holographic structure) */}
+      {/* 1. Main Cabinet Shell (Translucent clean glass structure) */}
       <mesh position={[0, 0, 0]}>
         <boxGeometry args={[1.0, 2.0, 0.8]} />
         <meshPhysicalMaterial
-          color="#0f1f2e"
-          roughness={0.12}
+          color="#ffffff"
+          roughness={0.1}
           metalness={0.1}
-          transmission={0.4}
-          ior={1.2}
-          thickness={0.2}
+          transmission={0.9}
+          ior={1.5}
+          thickness={0.5}
           transparent
-          opacity={0.36}
+          opacity={0.3}
           side={THREE.DoubleSide}
         />
       </mesh>
@@ -900,13 +897,13 @@ function Refrigerator({ explode }) {
       {/* Wireframe border outlining the cabinet shell */}
       <mesh position={[0, 0, 0]}>
         <boxGeometry args={[1.0, 2.0, 0.8]} />
-        <meshBasicMaterial color="#00f0ff" wireframe transparent opacity={0.18} />
+        <meshBasicMaterial color="#94a3b8" wireframe transparent opacity={0.15} />
       </mesh>
 
       {/* 2. Divider Panel (Center Shelf) */}
       <mesh position={[0, 0.1, 0]}>
         <boxGeometry args={[0.96, 0.03, 0.72]} />
-        <meshBasicMaterial color="#00f0ff" transparent opacity={0.25} />
+        <meshBasicMaterial color="#cbd5e1" transparent opacity={0.25} />
       </mesh>
 
       {/* 3. Sliding Upper Food Shelf */}
@@ -917,7 +914,7 @@ function Refrigerator({ explode }) {
         </mesh>
         <mesh>
           <boxGeometry args={[0.92, 0.02, 0.68]} />
-          <meshBasicMaterial color="#00f0ff" wireframe transparent opacity={0.12} />
+          <meshBasicMaterial color="#cbd5e1" wireframe transparent opacity={0.12} />
         </mesh>
       </group>
 
@@ -925,11 +922,11 @@ function Refrigerator({ explode }) {
       <group position={[0, -0.45, drawerZ]}>
         <mesh>
           <boxGeometry args={[0.88, 0.35, 0.65]} />
-          <meshPhysicalMaterial color="#00ff88" transmission={0.8} transparent opacity={0.12} />
+          <meshPhysicalMaterial color="#93c5fd" transmission={0.8} transparent opacity={0.12} />
         </mesh>
         <mesh>
           <boxGeometry args={[0.88, 0.35, 0.65]} />
-          <meshBasicMaterial color="#00ff88" wireframe transparent opacity={0.15} />
+          <meshBasicMaterial color="#2563eb" wireframe transparent opacity={0.15} />
         </mesh>
       </group>
 
@@ -938,11 +935,11 @@ function Refrigerator({ explode }) {
         <group rotation={[0, -doorRotateY, 0]} position={[-0.5, 0, 0]}>
           <mesh position={[0.5, 0, 0.02]}>
             <boxGeometry args={[0.96, 0.9, 0.05]} />
-            <meshPhysicalMaterial color="#00e5ff" transmission={0.65} transparent opacity={0.25} />
+            <meshPhysicalMaterial color="#ffffff" transmission={0.8} transparent opacity={0.25} />
           </mesh>
           <mesh position={[0.5, 0, 0.02]}>
             <boxGeometry args={[0.96, 0.9, 0.05]} />
-            <meshBasicMaterial color="#00e5ff" wireframe transparent opacity={0.15} />
+            <meshBasicMaterial color="#e2e8f0" wireframe transparent opacity={0.15} />
           </mesh>
         </group>
       </group>
@@ -951,11 +948,11 @@ function Refrigerator({ explode }) {
       <group position={[0, -0.85, backPanelY - 0.28]}>
         <mesh rotation={[Math.PI / 2, 0, 0]}>
           <cylinderGeometry args={[0.18, 0.18, 0.32, 16]} />
-          <meshBasicMaterial color="#ffa801" transparent opacity={0.4} />
+          <meshBasicMaterial color="#475569" transparent opacity={0.4} />
         </mesh>
         <mesh rotation={[Math.PI / 2, 0, 0]}>
           <cylinderGeometry args={[0.18, 0.18, 0.32, 16]} />
-          <meshBasicMaterial color="#ffa801" wireframe transparent opacity={0.2} />
+          <meshBasicMaterial color="#cbd5e1" wireframe transparent opacity={0.2} />
         </mesh>
       </group>
     </group>
@@ -979,9 +976,9 @@ function Battery({ explode }) {
         <mesh>
           <cylinderGeometry args={[0.5, 0.5, 1.8, 16, 2, true, 0, Math.PI]} />
           <meshPhysicalMaterial
-            color="#00f0ff"
+            color="#e2e8f0"
             roughness={0.08}
-            transmission={0.8}
+            transmission={0.9}
             transparent
             opacity={0.25}
             side={THREE.DoubleSide}
@@ -989,7 +986,7 @@ function Battery({ explode }) {
         </mesh>
         <mesh>
           <cylinderGeometry args={[0.5, 0.5, 1.8, 16, 2, true, 0, Math.PI]} />
-          <meshBasicMaterial color="#00f0ff" wireframe transparent opacity={0.15} side={THREE.DoubleSide} />
+          <meshBasicMaterial color="#cbd5e1" wireframe transparent opacity={0.15} side={THREE.DoubleSide} />
         </mesh>
       </group>
 
@@ -998,9 +995,9 @@ function Battery({ explode }) {
         <mesh>
           <cylinderGeometry args={[0.5, 0.5, 1.8, 16, 2, true, Math.PI, Math.PI]} />
           <meshPhysicalMaterial
-            color="#00f0ff"
+            color="#e2e8f0"
             roughness={0.08}
-            transmission={0.8}
+            transmission={0.9}
             transparent
             opacity={0.25}
             side={THREE.DoubleSide}
@@ -1008,7 +1005,7 @@ function Battery({ explode }) {
         </mesh>
         <mesh>
           <cylinderGeometry args={[0.5, 0.5, 1.8, 16, 2, true, Math.PI, Math.PI]} />
-          <meshBasicMaterial color="#00f0ff" wireframe transparent opacity={0.15} side={THREE.DoubleSide} />
+          <meshBasicMaterial color="#cbd5e1" wireframe transparent opacity={0.15} side={THREE.DoubleSide} />
         </mesh>
       </group>
 
@@ -1016,11 +1013,11 @@ function Battery({ explode }) {
       <group position={[0, cathodeY - 0.96, 0]}>
         <mesh>
           <cylinderGeometry args={[0.26, 0.26, 0.12, 16]} />
-          <meshBasicMaterial color="#0072ff" transparent opacity={0.5} />
+          <meshBasicMaterial color="#2563eb" transparent opacity={0.5} />
         </mesh>
         <mesh>
           <cylinderGeometry args={[0.26, 0.26, 0.12, 16]} />
-          <meshBasicMaterial color="#0072ff" wireframe transparent opacity={0.2} />
+          <meshBasicMaterial color="#93c5fd" wireframe transparent opacity={0.2} />
         </mesh>
       </group>
 
@@ -1028,11 +1025,11 @@ function Battery({ explode }) {
       <group position={[0, anodeY + 0.96, 0]}>
         <mesh>
           <cylinderGeometry args={[0.18, 0.18, 0.12, 16]} />
-          <meshBasicMaterial color="#ef4444" transparent opacity={0.5} />
+          <meshBasicMaterial color="#dc2626" transparent opacity={0.5} />
         </mesh>
         <mesh>
           <cylinderGeometry args={[0.18, 0.18, 0.12, 16]} />
-          <meshBasicMaterial color="#ef4444" wireframe transparent opacity={0.2} />
+          <meshBasicMaterial color="#fca5a5" wireframe transparent opacity={0.2} />
         </mesh>
       </group>
 
@@ -1044,7 +1041,7 @@ function Battery({ explode }) {
         </mesh>
         <mesh>
           <cylinderGeometry args={[0.42, 0.42, 1.5, 16]} />
-          <meshBasicMaterial color="#00f0ff" wireframe transparent opacity={0.12} />
+          <meshBasicMaterial color="#cbd5e1" wireframe transparent opacity={0.12} />
         </mesh>
       </group>
 
@@ -1052,11 +1049,11 @@ function Battery({ explode }) {
       <group position={[0, 0, -coreZ]}>
         <mesh>
           <cylinderGeometry args={[0.35, 0.35, 1.35, 12]} />
-          <meshBasicMaterial color="#00ff88" transparent opacity={0.18} />
+          <meshBasicMaterial color="#93c5fd" transparent opacity={0.18} />
         </mesh>
         <mesh>
           <cylinderGeometry args={[0.35, 0.35, 1.35, 12]} />
-          <meshBasicMaterial color="#00ff88" wireframe transparent opacity={0.1} />
+          <meshBasicMaterial color="#60a5fa" wireframe transparent opacity={0.1} />
         </mesh>
       </group>
     </group>
@@ -1125,16 +1122,16 @@ function Turbine({ explode, turbineRef, configMode, selectedMeshIdx, hoveredMesh
           if (index === selectedMeshIdx) {
             // Selected mesh: bright solid gold
             child.material = new THREE.MeshStandardMaterial({
-              color: '#f59e0b',
-              emissive: '#b45309',
+              color: '#d97706',
+              emissive: '#78350f',
               roughness: 0.1,
               metalness: 0.8
             });
           } else if (index === hoveredMeshIdx) {
-            // Hovered mesh: cyan
+            // Hovered mesh: royal blue
             child.material = new THREE.MeshStandardMaterial({
-              color: '#06b6d4',
-              emissive: '#0891b2',
+              color: '#2563eb',
+              emissive: '#1d4ed8',
               roughness: 0.2,
               metalness: 0.5
             });
@@ -1420,20 +1417,20 @@ function SpatialScene({
 
   const gridY = activeModel === 'fridge' ? -1.005 : (activeModel === 'battery' ? -0.905 : -0.605);
 
-  const ambientIntensity = focusMode ? 2.0 : 1.5;
-  const hemisphereIntensity = focusMode ? 2.2 : 1.8;
-  const keyLightIntensity = focusMode ? 5.5 : 4.5;
+  const ambientIntensity = focusMode ? 1.0 : 0.75;
+  const hemisphereIntensity = focusMode ? 1.1 : 0.85;
+  const keyLightIntensity = focusMode ? 2.4 : 1.9;
 
   return (
     <>
       {/* Clean neutral studio ambient lights */}
-      <ambientLight intensity={0.7} color="#ffffff" />
-      <hemisphereLight skyColor="#ffffff" groundColor="#dddddd" intensity={0.8} />
+      <ambientLight intensity={ambientIntensity} color="#ffffff" />
+      <hemisphereLight skyColor="#ffffff" groundColor="#dddddd" intensity={hemisphereIntensity} />
       
       {/* Key Light (Neutral white studio light) */}
       <directionalLight 
         position={[8, 12, 8]} 
-        intensity={1.8} 
+        intensity={keyLightIntensity} 
         color="#ffffff" 
         castShadow 
       />
@@ -1441,14 +1438,14 @@ function SpatialScene({
       {/* Fill Light (Neutral cool fill) */}
       <directionalLight 
         position={[-8, 4, 8]} 
-        intensity={0.8} 
+        intensity={0.9} 
         color="#eaeaea" 
       />
 
       {/* Bounce Light (Neutral ground bounce) */}
       <directionalLight 
         position={[0, -5, 0]} 
-        intensity={0.4} 
+        intensity={0.45} 
         color="#dddddd" 
       />
 
@@ -1464,8 +1461,8 @@ function SpatialScene({
         cellThickness={0.6}
         sectionSize={3.3}
         sectionThickness={1.5}
-        sectionColor="#a0aab8"
-        cellColor="#e2e8f0"
+        sectionColor="#cbd5e1"
+        cellColor="#f1f5f9"
         fadeDistance={30}
       />
       
@@ -1585,19 +1582,18 @@ const ObjectItem = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 0.6rem 0.8rem;
-  background: ${props => props.$active ? 'rgba(37, 99, 235, 0.15)' : 'rgba(255, 255, 255, 0.02)'};
-  border: 1px solid ${props => props.$active ? 'rgba(80, 180, 255, 0.45)' : 'rgba(255, 255, 255, 0.08)'};
+  background: ${props => props.$active ? 'rgba(37, 99, 235, 0.06)' : 'rgba(0, 0, 0, 0.01)'};
+  border: 1px solid ${props => props.$active ? 'rgba(37, 99, 235, 0.3)' : 'rgba(0, 0, 0, 0.06)'};
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
   font-size: 0.75rem;
-  color: ${props => props.$active ? '#ffffff' : '#cbd5e1'};
-  box-shadow: ${props => props.$active ? '0 0 12px rgba(80, 180, 255, 0.15)' : 'none'};
+  color: ${props => props.$active ? '#1e293b' : '#475569'};
 
   &:hover {
-    background: rgba(37, 99, 235, 0.08);
-    border-color: rgba(37, 99, 235, 0.4);
-    color: #ffffff;
+    background: rgba(37, 99, 235, 0.04);
+    border-color: rgba(37, 99, 235, 0.2);
+    color: #1e293b;
   }
 
   .label-group {
@@ -1610,8 +1606,7 @@ const ObjectItem = styled.div`
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: ${props => props.$active ? '#00f0ff' : 'transparent'};
-    box-shadow: ${props => props.$active ? '0 0 6px #00f0ff' : 'none'};
+    background: ${props => props.$active ? '#2563eb' : 'transparent'};
   }
 `;
 
@@ -1620,7 +1615,7 @@ const TreeContainer = styled.div`
   flex-direction: column;
   gap: 0.35rem;
   padding-left: 0.5rem;
-  border-left: 1px dashed rgba(80, 180, 255, 0.15);
+  border-left: 1px dashed rgba(0, 0, 0, 0.08);
 `;
 
 const TreeItem = styled.div`
@@ -1633,13 +1628,13 @@ const TreeItem = styled.div`
   cursor: pointer;
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.7rem;
-  color: ${props => props.$active ? '#00f0ff' : '#cbd5e1'};
-  background: ${props => props.$active ? 'rgba(0, 240, 255, 0.06)' : 'transparent'};
+  color: ${props => props.$active ? '#2563eb' : '#475569'};
+  background: ${props => props.$active ? 'rgba(37, 99, 235, 0.06)' : 'transparent'};
   transition: all 0.15s ease;
 
   &:hover {
-    color: #00f0ff;
-    background: rgba(0, 240, 255, 0.03);
+    color: #2563eb;
+    background: rgba(37, 99, 235, 0.03);
   }
 
   &::before {
@@ -1649,7 +1644,7 @@ const TreeItem = styled.div`
     top: 50%;
     width: 0.4rem;
     height: 1px;
-    border-bottom: 1px dashed rgba(80, 180, 255, 0.15);
+    border-bottom: 1px dashed rgba(0, 0, 0, 0.08);
   }
 `;
 
@@ -1661,10 +1656,10 @@ const BottomDock = styled.div`
   display: flex;
   align-items: center;
   gap: 0.8rem;
-  background: rgba(10, 16, 27, 0.78);
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(18px);
-  border: 1px solid rgba(80, 180, 255, 0.22);
-  box-shadow: inset 0 0 16px rgba(80, 180, 255, 0.04), 0 12px 30px rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04), 0 12px 30px rgba(15, 23, 42, 0.06);
   border-radius: 30px;
   padding: 0.5rem 1.2rem;
   z-index: 6;
@@ -1692,25 +1687,25 @@ const BottomDock = styled.div`
   .divider {
     width: 1px;
     height: 18px;
-    background: rgba(80, 180, 255, 0.15);
+    background: rgba(0, 0, 0, 0.08);
   }
 
   .label {
-    font-size: 0.65rem;
+    font-size: 0.7rem;
     font-weight: 700;
-    color: #8fa3b5;
+    color: #475569;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.02em;
     font-family: 'Outfit', sans-serif;
   }
 
   button {
     background: transparent;
     border: 1px solid transparent;
-    color: #cbd5e1;
+    color: #475569;
     cursor: pointer;
     font-family: 'Outfit', sans-serif;
-    font-size: 0.72rem;
+    font-size: 0.75rem;
     font-weight: 600;
     padding: 0.3rem 0.6rem;
     border-radius: 15px;
@@ -1720,23 +1715,21 @@ const BottomDock = styled.div`
     transition: all 0.2s ease;
 
     &:hover {
-      background: rgba(80, 180, 255, 0.08);
-      border-color: rgba(80, 180, 255, 0.2);
-      color: #fff;
+      background: rgba(0, 0, 0, 0.04);
+      color: #1e293b;
     }
 
     &.active {
-      background: rgba(37, 99, 235, 0.25);
-      border-color: rgba(80, 180, 255, 0.4);
-      color: #00f0ff;
-      box-shadow: 0 0 10px rgba(0, 240, 255, 0.15);
+      background: rgba(37, 99, 235, 0.08);
+      border-color: rgba(37, 99, 235, 0.3);
+      color: #2563eb;
     }
   }
 
   .zoom-display {
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.75rem;
-    color: #00f0ff;
+    color: #2563eb;
     min-width: 38px;
     text-align: center;
   }
@@ -1752,7 +1745,7 @@ const BottomDock = styled.div`
       width: 70px;
       height: 3px;
       border-radius: 2px;
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(0, 0, 0, 0.08);
       outline: none;
 
       &::-webkit-slider-thumb {
@@ -1760,9 +1753,9 @@ const BottomDock = styled.div`
         width: 10px;
         height: 10px;
         border-radius: 50%;
-        background: #00f0ff;
+        background: #2563eb;
         cursor: pointer;
-        box-shadow: 0 0 4px #00f0ff;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.15);
       }
     }
   }
@@ -1935,9 +1928,10 @@ export default function SpatialUI() {
                     alignItems: 'center',
                     gap: '0.3rem',
                     justifyContent: 'center',
-                    background: trackingMode === m.mode ? 'rgba(37,99,235,0.25)' : 'rgba(255,255,255,0.02)',
-                    border: `1px solid ${trackingMode === m.mode ? '#00f0ff' : 'rgba(255,255,255,0.08)'}`,
-                    color: trackingMode === m.mode ? '#fff' : '#cbd5e1',
+                    background: trackingMode === m.mode ? 'rgba(37,99,235,0.08)' : 'rgba(0,0,0,0.02)',
+                    border: `1px solid ${trackingMode === m.mode ? '#2563eb' : 'rgba(0,0,0,0.08)'}`,
+                    color: trackingMode === m.mode ? '#2563eb' : '#475569',
+                    fontWeight: trackingMode === m.mode ? '700' : '500',
                     borderRadius: '4px',
                     cursor: 'pointer',
                     transition: 'all 0.2s'
@@ -1960,9 +1954,9 @@ export default function SpatialUI() {
                   value={wsUrl}
                   onChange={(e) => setWsUrl(e.target.value)}
                   style={{
-                    background: 'rgba(15, 17, 23, 0.6)',
-                    border: '1px solid rgba(80, 180, 255, 0.15)',
-                    color: '#fff',
+                    background: 'rgba(0, 0, 0, 0.03)',
+                    border: '1px solid rgba(0, 0, 0, 0.08)',
+                    color: '#1e293b',
                     padding: '0.4rem',
                     borderRadius: '4px',
                     fontSize: '0.7rem',
@@ -1972,7 +1966,7 @@ export default function SpatialUI() {
                   }}
                 />
               </div>
-              <span className="tech-info" style={{ color: isConnected ? '#10b981' : '#ef4444', display: 'block', marginTop: '0.2rem' }}>
+              <span className="tech-info" style={{ color: isConnected ? '#16a34a' : '#dc2626', display: 'block', marginTop: '0.2rem' }}>
                 {isConnected ? '● 已连接' : '○ 未连接'}
               </span>
             </HudCard>
@@ -1987,14 +1981,13 @@ export default function SpatialUI() {
                   width: '6px',
                   height: '6px',
                   borderRadius: '50%',
-                  background: handDetected ? '#10b981' : '#ef4444',
-                  boxShadow: handDetected ? '0 0 6px #10b981' : '0 0 6px #ef4444'
+                  background: handDetected ? '#16a34a' : '#dc2626',
                 }} />
-                <span style={{ color: '#cbd5e1', fontFamily: 'JetBrains Mono, monospace' }}>
+                <span style={{ color: '#475569', fontFamily: 'JetBrains Mono, monospace', fontWeight: '600' }}>
                   {handDetected ? '在线' : '离线'}
                 </span>
               </div>
-              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', color: '#00f0ff' }}>
+              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', color: '#2563eb', fontWeight: '700' }}>
                 置信度: {handDetected ? '98.4%' : '0.0%'}
               </span>
             </div>
@@ -2005,22 +1998,22 @@ export default function SpatialUI() {
 
           <HudCard>
             <h3>指针数据</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.2rem', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: '#94a3b8', marginTop: '0.2rem' }}>
-              <div>X轴: <span style={{ color: '#fff' }}>{cursor.x.toFixed(3)}</span></div>
-              <div>Y轴: <span style={{ color: '#fff' }}>{cursor.y.toFixed(3)}</span></div>
-              <div>Z轴: <span style={{ color: '#fff' }}>{isPinching ? '0.214' : '0.000'}</span></div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.2rem', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: '#475569', marginTop: '0.2rem' }}>
+              <div>X轴: <span style={{ color: '#1e293b', fontWeight: '600' }}>{cursor.x.toFixed(3)}</span></div>
+              <div>Y轴: <span style={{ color: '#1e293b', fontWeight: '600' }}>{cursor.y.toFixed(3)}</span></div>
+              <div>Z轴: <span style={{ color: '#1e293b', fontWeight: '600' }}>{isPinching ? '0.214' : '0.000'}</span></div>
             </div>
             <div style={{ marginTop: '0.5rem' }}>
-              <svg width="100%" height="60" style={{ background: 'rgba(0,0,0,0.22)', borderRadius: '6px', border: '1px solid rgba(80,180,255,0.1)' }}>
+              <svg width="100%" height="60" style={{ background: 'rgba(0,0,0,0.02)', borderRadius: '6px', border: '1px solid rgba(0,0,0,0.06)' }}>
                 <defs>
                   <pattern id="pointer-grid" width="10" height="10" patternUnits="userSpaceOnUse">
-                    <path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(80,180,255,0.06)" strokeWidth="0.8" />
+                    <path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(0,0,0,0.04)" strokeWidth="0.8" />
                   </pattern>
                 </defs>
                 <rect width="100%" height="100%" fill="url(#pointer-grid)" />
-                <line x1="50%" y1="0" x2="50%" y2="100%" stroke="rgba(80,180,255,0.15)" strokeWidth="0.5" strokeDasharray="2,2" />
-                <line x1="0" y1="50%" x2="100%" y2="50%" stroke="rgba(80,180,255,0.15)" strokeWidth="0.5" strokeDasharray="2,2" />
-                <circle cx={`${50 + cursor.x * 50}%`} cy={`${50 - cursor.y * 50}%`} r="3.5" fill="#00f0ff" style={{ filter: 'drop-shadow(0 0 4px #00f0ff)', transition: 'cx 0.05s, cy 0.05s' }} />
+                <line x1="50%" y1="0" x2="50%" y2="100%" stroke="rgba(0,0,0,0.06)" strokeWidth="0.5" strokeDasharray="2,2" />
+                <line x1="0" y1="50%" x2="100%" y2="50%" stroke="rgba(0,0,0,0.06)" strokeWidth="0.5" strokeDasharray="2,2" />
+                <circle cx={`${50 + cursor.x * 50}%`} cy={`${50 - cursor.y * 50}%`} r="3.5" fill="#2563eb" style={{ filter: 'drop-shadow(0 0 2px rgba(37,99,235,0.4))', transition: 'cx 0.05s, cy 0.05s' }} />
               </svg>
             </div>
           </HudCard>
@@ -2028,16 +2021,16 @@ export default function SpatialUI() {
           <HudCard>
             <h3>性能诊断</h3>
             <div className="sparkline-row" style={{ marginTop: '0.2rem' }}>
-              <span>帧率 (FPS): <span style={{ color: '#fff' }}>59.8</span></span>
-              <Sparkline color="#00ff88" points={[15, 18, 17, 16, 20, 19, 21, 20, 18, 20]} />
+              <span>帧率 (FPS): <span style={{ color: '#1e293b', fontWeight: '600' }}>59.8</span></span>
+              <Sparkline color="#16a34a" points={[15, 18, 17, 16, 20, 19, 21, 20, 18, 20]} />
             </div>
             <div className="sparkline-row">
-              <span>延时: <span style={{ color: '#fff' }}>11ms</span></span>
-              <Sparkline color="#ffaa00" points={[10, 8, 12, 11, 15, 12, 10, 9, 11, 8]} />
+              <span>延时: <span style={{ color: '#1e293b', fontWeight: '600' }}>11ms</span></span>
+              <Sparkline color="#d97706" points={[10, 8, 12, 11, 15, 12, 10, 9, 11, 8]} />
             </div>
             <div className="sparkline-row">
-              <span>追踪质量: <span style={{ color: '#fff' }}>99.2%</span></span>
-              <Sparkline color="#00a8ff" points={[5, 12, 18, 15, 8, 22, 14, 18, 10, 15]} />
+              <span>追踪质量: <span style={{ color: '#1e293b', fontWeight: '600' }}>99.2%</span></span>
+              <Sparkline color="#2563eb" points={[5, 12, 18, 15, 8, 22, 14, 18, 10, 15]} />
             </div>
           </HudCard>
         </Sidebar>
@@ -2142,7 +2135,7 @@ export default function SpatialUI() {
                 value={explodeAmount}
                 onChange={(e) => setExplodeAmount(parseFloat(e.target.value))}
               />
-              <span style={{ fontFamily: 'JetBrains Mono', color: '#00f0ff', minWidth: '32px' }}>
+              <span style={{ fontFamily: 'JetBrains Mono', color: '#2563eb', minWidth: '32px' }}>
                 {Math.round(explodeAmount * 100)}%
               </span>
             </div>
@@ -2170,9 +2163,9 @@ export default function SpatialUI() {
                 });
               }}
               style={{
-                background: focusMode ? 'rgba(239, 68, 68, 0.2)' : 'transparent',
-                borderColor: focusMode ? 'rgba(239, 68, 68, 0.4)' : 'transparent',
-                color: focusMode ? '#ef4444' : '#cbd5e1'
+                background: focusMode ? 'rgba(239, 68, 68, 0.08)' : 'transparent',
+                borderColor: focusMode ? 'rgba(239, 68, 68, 0.25)' : 'transparent',
+                color: focusMode ? '#ef4444' : '#475569'
               }}
             >
               🎯 {focusMode ? '退出观察' : '沉浸观察'}
@@ -2180,7 +2173,7 @@ export default function SpatialUI() {
           </BottomDock>
 
           <div className="pip-instructions">
-            💡 提示: 点击 3D 场景中的 <span style={{ color: '#00f0ff', fontWeight: 900 }}>标签点位</span> 即可高亮并追踪该零件，数据在右侧面板同步更新。
+            💡 提示: 点击 3D 场景中的 <span style={{ color: '#2563eb', fontWeight: 900 }}>标签点位</span> 即可高亮并追踪该零件，数据在右侧面板同步更新。
             {handDetected ? ' 捏合并上下拖拽，即可空中拆解模型。' : ' 拖拽鼠标即可旋转模型，缩放手轮可调节焦距。'}
           </div>
         </CanvasContainer>
@@ -2190,12 +2183,12 @@ export default function SpatialUI() {
           {configMode ? (
             <HudCard style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem', minHeight: '450px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3 style={{ borderLeftColor: '#eab308' }}>🔧 标签配置中心</h3>
+                <h3 style={{ borderLeftColor: '#d97706' }}>🔧 标签配置中心</h3>
                 <button 
                   onClick={() => setConfigMode(false)}
                   style={{
-                    background: 'rgba(239, 68, 68, 0.15)',
-                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    border: '1px solid rgba(239, 68, 68, 0.25)',
                     color: '#ef4444',
                     fontSize: '0.6rem',
                     padding: '0.15rem 0.45rem',
@@ -2203,26 +2196,26 @@ export default function SpatialUI() {
                     cursor: 'pointer',
                     transition: 'all 0.2s'
                   }}
-                  onMouseEnter={(e) => { e.target.style.background = 'rgba(239, 68, 68, 0.25)' }}
-                  onMouseLeave={(e) => { e.target.style.background = 'rgba(239, 68, 68, 0.15)' }}
+                  onMouseEnter={(e) => { e.target.style.background = 'rgba(239, 68, 68, 0.18)' }}
+                  onMouseLeave={(e) => { e.target.style.background = 'rgba(239, 68, 68, 0.1)' }}
                 >
                   退出配置
                 </button>
               </div>
 
               {activeModel !== 'turbine' ? (
-                <div style={{ fontSize: '0.7rem', color: '#94a3b8', padding: '1rem 0' }}>
+                <div style={{ fontSize: '0.7rem', color: '#64748b', padding: '1rem 0' }}>
                   目前仅支持风力发电机模型的子网格标签配置。
                 </div>
               ) : (
                 <>
-                  <span style={{ fontSize: '0.6rem', color: '#94a3b8' }}>
+                  <span style={{ fontSize: '0.6rem', color: '#64748b' }}>
                     在下方列表或视口中直接点击以选中子网格进行全息标签绑定。
                   </span>
 
-                  <div style={{ maxHeight: '130px', overflowY: 'auto', border: '1px solid rgba(80, 180, 255, 0.12)', borderRadius: '6px', padding: '0.2rem', background: 'rgba(0,0,0,0.22)', scrollbarWidth: 'thin' }}>
+                  <div style={{ maxHeight: '130px', overflowY: 'auto', border: '1px solid rgba(0, 0, 0, 0.08)', borderRadius: '6px', padding: '0.2rem', background: 'rgba(0,0,0,0.02)', scrollbarWidth: 'thin' }}>
                     {meshList.length === 0 ? (
-                      <span style={{ fontSize: '0.62rem', color: '#94a3b8', padding: '0.5rem', display: 'block' }}>模型网格加载中...</span>
+                      <span style={{ fontSize: '0.62rem', color: '#64748b', padding: '0.5rem', display: 'block' }}>模型网格加载中...</span>
                     ) : (
                       meshList.map((mesh) => {
                         const isMesh = mesh.isMesh;
@@ -2249,18 +2242,18 @@ export default function SpatialUI() {
                               fontSize: '0.62rem',
                               fontFamily: 'JetBrains Mono, monospace',
                               background: selectedMeshIdx === idx 
-                                ? 'rgba(234, 158, 11, 0.18)' 
-                                : (hoveredMeshIdx === idx ? 'rgba(6, 182, 212, 0.08)' : 'transparent'),
+                                ? 'rgba(217, 119, 6, 0.08)' 
+                                : (hoveredMeshIdx === idx ? 'rgba(37, 99, 235, 0.04)' : 'transparent'),
                               border: `1px solid ${selectedMeshIdx === idx 
-                                ? '#eab308' 
-                                : (hoveredMeshIdx === idx ? 'rgba(6, 182, 212, 0.3)' : 'transparent')}`,
-                              color: isTagged ? '#00f0ff' : '#cbd5e1',
+                                ? '#d97706' 
+                                : (hoveredMeshIdx === idx ? 'rgba(37, 99, 235, 0.25)' : 'transparent')}`,
+                              color: isTagged ? '#2563eb' : '#475569',
                               marginBottom: '2px'
                             }}
                           >
                             <span>#{idx.toString().padStart(2, '0')} {name}</span>
                             {isTagged && (
-                              <span style={{ fontSize: '0.55rem', background: 'rgba(0, 240, 255, 0.15)', padding: '0.02rem 0.2rem', borderRadius: '3px', border: '1px solid rgba(0, 240, 255, 0.3)' }}>
+                              <span style={{ fontSize: '0.55rem', background: 'rgba(37, 99, 235, 0.08)', padding: '0.02rem 0.2rem', borderRadius: '3px', border: '1px solid rgba(37, 99, 235, 0.25)' }}>
                                 已绑定 {mappedPartId}
                               </span>
                             )}
@@ -2276,9 +2269,9 @@ export default function SpatialUI() {
                       const partInfo = matchedPartId ? customTurbineParts[matchedPartId] : null;
 
                       return (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '0.4rem', flex: 1, overflowY: 'auto', paddingRight: '4px', scrollbarWidth: 'thin' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', borderTop: '1px solid rgba(0,0,0,0.06)', paddingTop: '0.4rem', flex: 1, overflowY: 'auto', paddingRight: '4px', scrollbarWidth: 'thin' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#eab308' }}>
+                            <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#d97706' }}>
                               配置网格 #{selectedMeshIdx}
                             </span>
                             {partInfo ? (
@@ -2293,7 +2286,7 @@ export default function SpatialUI() {
                                   setPartMeshIndices(updatedIndices);
                                 }}
                                 style={{
-                                  background: 'rgba(239, 68, 68, 0.12)',
+                                  background: 'rgba(239, 68, 68, 0.08)',
                                   border: '1px solid rgba(239, 68, 68, 0.25)',
                                   color: '#ef4444',
                                   fontSize: '0.58rem',
@@ -2334,9 +2327,9 @@ export default function SpatialUI() {
                                   });
                                 }}
                                 style={{
-                                  background: 'rgba(16, 185, 129, 0.15)',
-                                  border: '1px solid rgba(16, 185, 129, 0.3)',
-                                  color: '#10b981',
+                                  background: 'rgba(22, 163, 74, 0.08)',
+                                  border: '1px solid rgba(22, 163, 74, 0.25)',
+                                  color: '#16a34a',
                                   fontSize: '0.58rem',
                                   padding: '0.12rem 0.45rem',
                                   borderRadius: '3px',
@@ -2352,7 +2345,7 @@ export default function SpatialUI() {
                           {partInfo && (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', fontSize: '0.62rem' }}>
                               <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '0.3rem', alignItems: 'center' }}>
-                                <label style={{ color: '#94a3b8' }}>标签编号 (ID):</label>
+                                <label style={{ color: '#64748b' }}>标签编号 (ID):</label>
                                 <input
                                   type="text"
                                   value={partInfo.id}
@@ -2361,12 +2354,12 @@ export default function SpatialUI() {
                                     updated[matchedPartId].id = e.target.value;
                                     setCustomTurbineParts(updated);
                                   }}
-                                  style={{ background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(80,180,255,0.2)', color: '#fff', padding: '0.15rem 0.3rem', borderRadius: '3px', fontSize: '0.62rem', outline: 'none' }}
+                                  style={{ background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.08)', color: '#1e293b', padding: '0.15rem 0.3rem', borderRadius: '3px', fontSize: '0.62rem', outline: 'none' }}
                                 />
                               </div>
 
                               <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '0.3rem', alignItems: 'center' }}>
-                                <label style={{ color: '#94a3b8' }}>零件名称:</label>
+                                <label style={{ color: '#64748b' }}>零件名称:</label>
                                 <input
                                   type="text"
                                   value={partInfo.name}
@@ -2376,12 +2369,12 @@ export default function SpatialUI() {
                                     updated[matchedPartId].title = `${matchedPartId} ${e.target.value}`;
                                     setCustomTurbineParts(updated);
                                   }}
-                                  style={{ background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(80,180,255,0.2)', color: '#fff', padding: '0.15rem 0.3rem', borderRadius: '3px', fontSize: '0.62rem', outline: 'none' }}
+                                  style={{ background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.08)', color: '#1e293b', padding: '0.15rem 0.3rem', borderRadius: '3px', fontSize: '0.62rem', outline: 'none' }}
                                 />
                               </div>
 
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.1rem' }}>
-                                <label style={{ color: '#94a3b8' }}>描述文字:</label>
+                                <label style={{ color: '#64748b' }}>描述文字:</label>
                                 <textarea
                                   rows={2}
                                   value={partInfo.desc}
@@ -2390,15 +2383,15 @@ export default function SpatialUI() {
                                     updated[matchedPartId].desc = e.target.value;
                                     setCustomTurbineParts(updated);
                                   }}
-                                  style={{ background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(80,180,255,0.2)', color: '#fff', padding: '0.15rem 0.3rem', borderRadius: '3px', fontSize: '0.62rem', resize: 'none', outline: 'none' }}
+                                  style={{ background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.08)', color: '#1e293b', padding: '0.15rem 0.3rem', borderRadius: '3px', fontSize: '0.62rem', resize: 'none', outline: 'none' }}
                                 />
                               </div>
 
-                              <div style={{ borderTop: '1px dashed rgba(255,255,255,0.06)', margin: '0.2rem 0' }} />
+                              <div style={{ borderTop: '1px dashed rgba(0,0,0,0.06)', margin: '0.2rem 0' }} />
 
-                              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.3rem' }}>
+                              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.35rem 0.6rem' }}>
                                 <div>
-                                  <label style={{ color: '#94a3b8', display: 'block', marginBottom: '2px' }}>重量规格:</label>
+                                  <label style={{ color: '#64748b', display: 'block', marginBottom: '2px' }}>重量规格:</label>
                                   <input
                                     type="text"
                                     value={partInfo.specs.weight}
@@ -2407,11 +2400,11 @@ export default function SpatialUI() {
                                       updated[matchedPartId].specs.weight = e.target.value;
                                       setCustomTurbineParts(updated);
                                     }}
-                                    style={{ background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(80,180,255,0.2)', color: '#fff', padding: '0.15rem 0.3rem', borderRadius: '3px', fontSize: '0.58rem', width: '100%', boxSizing: 'border-box', outline: 'none' }}
+                                    style={{ background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.08)', color: '#1e293b', padding: '0.15rem 0.3rem', borderRadius: '3px', fontSize: '0.58rem', width: '100%', boxSizing: 'border-box', outline: 'none' }}
                                   />
                                 </div>
                                 <div>
-                                  <label style={{ color: '#94a3b8', display: 'block', marginBottom: '2px' }}>材料特性:</label>
+                                  <label style={{ color: '#64748b', display: 'block', marginBottom: '2px' }}>材料特性:</label>
                                   <input
                                     type="text"
                                     value={partInfo.specs.material}
@@ -2420,7 +2413,7 @@ export default function SpatialUI() {
                                       updated[matchedPartId].specs.material = e.target.value;
                                       setCustomTurbineParts(updated);
                                     }}
-                                    style={{ background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(80,180,255,0.2)', color: '#fff', padding: '0.15rem 0.3rem', borderRadius: '3px', fontSize: '0.58rem', width: '100%', boxSizing: 'border-box', outline: 'none' }}
+                                    style={{ background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.08)', color: '#1e293b', padding: '0.15rem 0.3rem', borderRadius: '3px', fontSize: '0.58rem', width: '100%', boxSizing: 'border-box', outline: 'none' }}
                                   />
                                 </div>
                               </div>
@@ -2430,8 +2423,8 @@ export default function SpatialUI() {
                       );
                     })()
                   ) : (
-                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px dashed rgba(80, 180, 255, 0.15)', borderRadius: '6px', background: 'rgba(0,0,0,0.1)', padding: '1rem' }}>
-                      <span style={{ fontSize: '0.62rem', color: '#94a3b8', textAlign: 'center' }}>未选中任何网格零件，请在 3D 视图或上方列表中选中一个部件。</span>
+                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px dashed rgba(0, 0, 0, 0.08)', borderRadius: '6px', background: 'rgba(0,0,0,0.02)', padding: '1rem' }}>
+                      <span style={{ fontSize: '0.62rem', color: '#64748b', textAlign: 'center' }}>未选中任何网格零件，请在 3D 视图或上方列表中选中一个部件。</span>
                     </div>
                   )}
 
@@ -2472,9 +2465,9 @@ export default function SpatialUI() {
                     <button 
                       onClick={() => setConfigMode(true)}
                       style={{
-                        background: 'rgba(80, 180, 255, 0.15)',
-                        border: '1px solid rgba(80, 180, 255, 0.3)',
-                        color: '#00f0ff',
+                        background: 'rgba(37, 99, 235, 0.08)',
+                        border: '1px solid rgba(37, 99, 235, 0.25)',
+                        color: '#2563eb',
                         fontSize: '0.62rem',
                         padding: '0.18rem 0.45rem',
                         borderRadius: '4px',
@@ -2482,8 +2475,8 @@ export default function SpatialUI() {
                         fontWeight: 600,
                         transition: 'all 0.2s'
                       }}
-                      onMouseEnter={(e) => { e.target.style.background = 'rgba(80, 180, 255, 0.25)' }}
-                      onMouseLeave={(e) => { e.target.style.background = 'rgba(80, 180, 255, 0.15)' }}
+                      onMouseEnter={(e) => { e.target.style.background = 'rgba(37, 99, 235, 0.15)' }}
+                      onMouseLeave={(e) => { e.target.style.background = 'rgba(37, 99, 235, 0.08)' }}
                     >
                       🔧 标签配置
                     </button>
@@ -2506,7 +2499,7 @@ export default function SpatialUI() {
                         <span style={{ fontSize: '1rem' }}>{item.icon}</span>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                           <span style={{ fontWeight: 600 }}>{item.label}</span>
-                          <span style={{ fontSize: '0.6rem', color: '#94a3b8', marginTop: '1px' }}>{item.desc}</span>
+                          <span style={{ fontSize: '0.6rem', color: '#64748b', marginTop: '1px' }}>{item.desc}</span>
                         </div>
                       </div>
                       <div className="status-indicator" />
@@ -2525,7 +2518,7 @@ export default function SpatialUI() {
                         $active={selectedPartId === id}
                         onClick={() => setSelectedPartId(id)}
                       >
-                        <span style={{ color: selectedPartId === id ? '#00f0ff' : 'rgba(80, 180, 255, 0.65)' }}>{id}</span>
+                        <span style={{ color: selectedPartId === id ? '#2563eb' : '#64748b' }}>{id}</span>
                         <span>{item.name}</span>
                       </TreeItem>
                     ))}
@@ -2535,9 +2528,9 @@ export default function SpatialUI() {
 
               <HudCard style={{ flex: 1 }}>
                 <h3>
-                  组件全息数据
+                  组件数据详情
                   {hoveredPartId && (
-                    <span style={{ color: '#00f0ff', fontSize: '0.62rem', marginLeft: '0.4rem', fontWeight: 500, letterSpacing: '0.05em' }}>
+                    <span style={{ color: '#2563eb', fontSize: '0.62rem', marginLeft: '0.4rem', fontWeight: 500, letterSpacing: '0.01em' }}>
                       (实时预览)
                     </span>
                   )}
@@ -2545,40 +2538,40 @@ export default function SpatialUI() {
                 {activePart ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', height: '100%' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '0.8rem', fontWeight: 700, color: hoveredPartId ? '#00f0ff' : '#fff', transition: 'color 0.2s' }}>
+                      <span style={{ fontSize: '0.8rem', fontWeight: 700, color: hoveredPartId ? '#2563eb' : '#0f172a', transition: 'color 0.2s' }}>
                         {activePart.name}
                       </span>
-                      <span style={{ fontSize: '0.6rem', fontFamily: 'JetBrains Mono', background: 'rgba(80,180,255,0.12)', padding: '0.1rem 0.35rem', borderRadius: '4px', border: '1px solid rgba(80,180,255,0.2)' }}>
+                      <span style={{ fontSize: '0.6rem', fontFamily: 'JetBrains Mono', background: 'rgba(37, 99, 235, 0.06)', padding: '0.1rem 0.35rem', borderRadius: '4px', border: '1px solid rgba(37, 99, 235, 0.18)', color: '#2563eb' }}>
                         {activePart.id}
                       </span>
                     </div>
                     
-                    <p style={{ margin: 0, fontSize: '0.68rem', color: '#94a3b8', lineHeight: 1.45 }}>
+                    <p style={{ margin: 0, fontSize: '0.68rem', color: '#475569', lineHeight: 1.45 }}>
                       {activePart.desc}
                     </p>
                     
-                    <div style={{ height: '1px', background: 'rgba(80, 180, 255, 0.12)', margin: '0.2rem 0' }} />
+                    <div style={{ height: '1px', background: 'rgba(0, 0, 0, 0.06)', margin: '0.2rem 0' }} />
                     
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.35rem 0.6rem', fontSize: '0.65rem', fontFamily: 'JetBrains Mono, monospace', color: '#cbd5e1' }}>
-                      <div>材料: <span style={{ color: '#fff' }}>{activePart.specs.material}</span></div>
-                      <div>重量: <span style={{ color: '#fff' }}>{activePart.specs.weight}</span></div>
-                      <div>状态: <span style={{ color: activePart.specs.status.includes('Active') || activePart.specs.status.includes('Running') || activePart.specs.status.includes('Healthy') || activePart.specs.status.includes('Online') || activePart.specs.status.includes('正常') || activePart.specs.status.includes('活动') || activePart.specs.status.includes('运行') || activePart.specs.status.includes('在线') ? '#10b981' : '#ffaa00' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.35rem 0.6rem', fontSize: '0.65rem', fontFamily: 'JetBrains Mono, monospace', color: '#475569' }}>
+                      <div>材料: <span style={{ color: '#1e293b', fontWeight: '500' }}>{activePart.specs.material}</span></div>
+                      <div>重量: <span style={{ color: '#1e293b', fontWeight: '500' }}>{activePart.specs.weight}</span></div>
+                      <div>状态: <span style={{ color: activePart.specs.status.includes('Active') || activePart.specs.status.includes('Running') || activePart.specs.status.includes('Healthy') || activePart.specs.status.includes('Online') || activePart.specs.status.includes('正常') || activePart.specs.status.includes('活动') || activePart.specs.status.includes('运行') || activePart.specs.status.includes('在线') ? '#16a34a' : '#d97706', fontWeight: '600' }}>
                         {activePart.specs.status}
                       </span></div>
-                      <div>温度: <span style={{ color: '#fff' }}>{activePart.specs.temp}</span></div>
+                      <div>温度: <span style={{ color: '#1e293b', fontWeight: '500' }}>{activePart.specs.temp}</span></div>
                       {activePart.specs.vibration && activePart.specs.vibration !== '---' && (
-                        <div style={{ gridColumn: 'span 2' }}>振动: <span style={{ color: '#fff' }}>{activePart.specs.vibration}</span></div>
+                        <div style={{ gridColumn: 'span 2' }}>振动: <span style={{ color: '#1e293b', fontWeight: '500' }}>{activePart.specs.vibration}</span></div>
                       )}
                       {activePart.specs.power && activePart.specs.power !== '---' && (
-                        <div style={{ gridColumn: 'span 2' }}>功率: <span style={{ color: '#fff' }}>{activePart.specs.power}</span></div>
+                        <div style={{ gridColumn: 'span 2' }}>功率: <span style={{ color: '#1e293b', fontWeight: '500' }}>{activePart.specs.power}</span></div>
                       )}
                       {activePart.specs.efficiency && activePart.specs.efficiency !== '---' && (
-                        <div style={{ gridColumn: 'span 2' }}>效率: <span style={{ color: '#fff' }}>{activePart.specs.efficiency}</span></div>
+                        <div style={{ gridColumn: 'span 2' }}>效率: <span style={{ color: '#1e293b', fontWeight: '500' }}>{activePart.specs.efficiency}</span></div>
                       )}
                     </div>
                   </div>
                 ) : (
-                  <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>请选择或悬停零件以查看其全息遥测参数</span>
+                  <span style={{ fontSize: '0.7rem', color: '#64748b' }}>请选择或悬停零件以查看其全息遥测参数</span>
                 )}
               </HudCard>
             </>
