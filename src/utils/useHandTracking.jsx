@@ -100,6 +100,7 @@ export function HandTrackingProvider({ children }) {
   const wsRef = useRef(null);
   const mediaPipeHandsRef = useRef(null);
   const mediaPipeCameraRef = useRef(null);
+  const lastProcessedTimeRef = useRef(0);
   const simulationIntervalRef = useRef(null);
   const activeModeRef = useRef(trackingMode);
   const activeInitIdRef = useRef(0);
@@ -453,13 +454,13 @@ export function HandTrackingProvider({ children }) {
         return;
       }
 
-      // 2. Get Camera stream (request ideal 60 FPS from hardware webcam)
+      // 2. Get Camera stream (request ideal 30 FPS from hardware webcam to avoid driver overhead)
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { 
           width: 640, 
           height: 480, 
           facingMode: 'user',
-          frameRate: { ideal: 60, min: 30 }
+          frameRate: { ideal: 30, min: 24 }
         },
       });
 
@@ -504,9 +505,18 @@ export function HandTrackingProvider({ children }) {
 
       // 5. Initialize MediaPipe Camera Loop
       if (videoRefInternal.current && mediaPipeHandsRef.current && window.Camera) {
+        lastProcessedTimeRef.current = 0;
         const cameraObj = new window.Camera(videoRefInternal.current, {
           onFrame: async () => {
             if (activeModeRef.current !== TRACKING_MODES.CAMERA || !mediaPipeHandsRef.current) return;
+            
+            // Throttle to 30 FPS (33ms) to prevent GPU overload
+            const now = Date.now();
+            if (now - lastProcessedTimeRef.current < 33) {
+              return;
+            }
+            lastProcessedTimeRef.current = now;
+
             // Only process frames if the video element is still active/mounted
             if (videoRefInternal.current) {
               await mediaPipeHandsRef.current.send({ image: videoRefInternal.current });
@@ -514,7 +524,7 @@ export function HandTrackingProvider({ children }) {
           },
           width: 640,
           height: 480,
-          fps: 60 // Request 60 FPS from the webcam stream
+          fps: 30 // Request 30 FPS from the webcam stream
         });
         mediaPipeCameraRef.current = cameraObj;
         cameraObj.start();
