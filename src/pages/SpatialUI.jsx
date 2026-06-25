@@ -1453,20 +1453,39 @@ function Turbine({ explode, turbineRef, configMode, selectedMeshIdx, hoveredMesh
       blades.rotateY(delta * (1.2 * (1 - explode * 0.85))); // Rotates slower as it explodes
     }
 
-    // Apply real-time explode translation along Z axis
+    // Apply real-time explode translation along Z axis in sorted Z-order to prevent components splitting/crossing
     const children = turbineRef.current.children;
     if (children && children.length > 0) {
-      const length = children.length;
+      if (!turbineRef.current.userData.sortedChildren) {
+        const meshesWithZ = [];
+        children.forEach((child, index) => {
+          if (child.isMesh) {
+            if (!child.userData.originPosition) {
+              child.userData.originPosition = child.position.clone();
+            }
+            meshesWithZ.push({ child, index, z: child.userData.originPosition.z });
+          }
+        });
+        // Sort ascending by initial Z coordinate
+        meshesWithZ.sort((a, b) => a.z - b.z);
+        const sortedMap = {};
+        meshesWithZ.forEach((item, rank) => {
+          sortedMap[item.index] = rank;
+        });
+        turbineRef.current.userData.sortedMap = sortedMap;
+        turbineRef.current.userData.sortedChildren = meshesWithZ;
+      }
+
+      const sortedChildren = turbineRef.current.userData.sortedChildren;
+      const length = sortedChildren.length;
       const mid = (length - 1) / 2;
       const step = 0.15;
 
       children.forEach((child, index) => {
         if (child.isMesh) {
-          if (!child.userData.originPosition) {
-            child.userData.originPosition = child.position.clone();
-          }
           const originPos = child.userData.originPosition;
-          const offset = (index - mid) * step * explode;
+          const rank = turbineRef.current.userData.sortedMap[index];
+          const offset = (rank - mid) * step * explode;
           child.position.z = originPos.z + offset;
         }
       });
@@ -1682,7 +1701,8 @@ function SpatialScene({
         Object.entries(customTurbineParts).forEach(([id, item]) => {
           let closestChildIndex = -1;
           let minDistance = Infinity;
-          const [lx, ly, lz] = getTurbinePartLocalPos(id);
+          // Use the actual pos configured in customTurbineParts
+          const [lx, ly, lz] = item.pos;
           const targetPos = new THREE.Vector3(lx, ly, lz);
           const closestCenter = new THREE.Vector3();
 
@@ -1695,7 +1715,8 @@ function SpatialScene({
               child.geometry.boundingBox.getCenter(center);
               center.applyMatrix4(child.matrix);
               
-              const dist = center.distanceTo(targetPos);
+              // Use Z-coordinate distance only to align segments along the length of the turbine, preventing Y-height collisions
+              const dist = Math.abs(center.z - targetPos.z);
               if (dist < minDistance) {
                 minDistance = dist;
                 closestChildIndex = index;
@@ -2088,11 +2109,17 @@ function SpatialScene({
             if (centerArr) {
               const meshIndex = partMeshIndices[id];
               let offset = 0;
-              if (meshIndex !== undefined && meshIndex >= 0) {
-                const childrenLength = turbineRef.current ? turbineRef.current.children.length : 13;
+              if (meshIndex !== undefined && meshIndex >= 0 && turbineRef.current) {
+                const sortedMap = turbineRef.current.userData.sortedMap;
+                const childrenLength = turbineRef.current.children.length;
                 const mid = (childrenLength - 1) / 2;
                 const step = 0.15;
-                offset = (meshIndex - mid) * step * explode;
+                if (sortedMap && sortedMap[meshIndex] !== undefined) {
+                  const rank = sortedMap[meshIndex];
+                  offset = (rank - mid) * step * explode;
+                } else {
+                  offset = (meshIndex - mid) * step * explode;
+                }
               }
               // Apply the scaling (1.2), position [0, -0.6, 0] and rotation [0, PI/2, 0] of the parent group
               explodedPos = [
