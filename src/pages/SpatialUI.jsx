@@ -89,12 +89,31 @@ const Sidebar = styled.section`
   top: 1.5rem;
   bottom: 1.5rem;
   ${props => props.$left ? 'left: 1.5rem;' : 'right: 1.5rem;'}
-  width: 290px;
+  width: 298px;
   z-index: 5;
   display: flex;
   flex-direction: column;
   gap: 1rem;
   transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease;
+  
+  /* Scrollable behavior to prevent card truncation */
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 6px;
+  
+  &::-webkit-scrollbar {
+    width: 5px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.12);
+    border-radius: 4px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.24);
+  }
 
   ${props => props.$collapsed && (props.$left ? 'transform: translateX(-340px); opacity: 0; pointer-events: none;' : 'transform: translateX(340px); opacity: 0; pointer-events: none;')}
 
@@ -107,6 +126,8 @@ const Sidebar = styled.section`
     width: 100%;
     height: auto;
     margin-bottom: 1rem;
+    overflow-y: visible;
+    padding-right: 0;
     ${props => props.$collapsed && 'display: none;'}
   }
 
@@ -204,7 +225,7 @@ const CanvasContainer = styled.div`
 
   .pip-instructions {
     position: absolute;
-    bottom: 1.5rem;
+    bottom: 5.5rem; /* Raised to prevent BottomDock overlapping and blocking vision */
     left: 50%;
     transform: translateX(-50%);
     background: rgba(255, 255, 255, 0.85);
@@ -235,6 +256,7 @@ const HudCard = styled.div`
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  flex-shrink: 0; /* Prevent flex compression, keeping natural fitting heights */
 
   &::before {
     content: '';
@@ -1793,6 +1815,7 @@ const BottomDock = styled.div`
   z-index: 6;
   pointer-events: auto;
   transition: all 0.3s ease;
+  white-space: nowrap;
 
   @media (max-width: 968px) {
     position: relative;
@@ -1804,18 +1827,28 @@ const BottomDock = styled.div`
     border-radius: 12px;
     padding: 0.8rem;
     margin: 1rem 1.5rem;
+    white-space: normal;
   }
 
   .dock-section {
     display: flex;
     align-items: center;
     gap: 0.4rem;
+    white-space: nowrap;
+  }
+
+  .zoom-control {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    white-space: nowrap;
   }
 
   .divider {
     width: 1px;
     height: 18px;
     background: rgba(0, 0, 0, 0.08);
+    flex-shrink: 0;
   }
 
   .label {
@@ -1825,6 +1858,7 @@ const BottomDock = styled.div`
     text-transform: uppercase;
     letter-spacing: 0.02em;
     font-family: 'Outfit', sans-serif;
+    white-space: nowrap;
   }
 
   button {
@@ -1841,6 +1875,8 @@ const BottomDock = styled.div`
     align-items: center;
     gap: 0.2rem;
     transition: all 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
 
     &:hover {
       background: rgba(0, 0, 0, 0.04);
@@ -1860,6 +1896,7 @@ const BottomDock = styled.div`
     color: #2563eb;
     min-width: 38px;
     text-align: center;
+    white-space: nowrap;
   }
 
   .explode-control {
@@ -1867,6 +1904,7 @@ const BottomDock = styled.div`
     align-items: center;
     gap: 0.4rem;
     font-size: 0.7rem;
+    white-space: nowrap;
 
     input[type='range'] {
       -webkit-appearance: none;
