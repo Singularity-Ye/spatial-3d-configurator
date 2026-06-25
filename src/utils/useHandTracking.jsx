@@ -491,13 +491,13 @@ export function HandTrackingProvider({ children }) {
         return;
       }
 
-      // 2. Get Camera stream (request ideal 30 FPS from hardware webcam to avoid driver overhead)
+      // 2. Get Camera stream (request ideal 60 FPS from hardware webcam)
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { 
           width: 640, 
           height: 480, 
           facingMode: 'user',
-          frameRate: { ideal: 30, min: 24 }
+          frameRate: { ideal: 60, min: 30 }
         },
       });
 
@@ -547,9 +547,9 @@ export function HandTrackingProvider({ children }) {
           onFrame: async () => {
             if (activeModeRef.current !== TRACKING_MODES.CAMERA || !mediaPipeHandsRef.current) return;
             
-            // Throttle to 30 FPS (33ms) to prevent GPU overload
+            // Throttle to 60 FPS (16ms) to prevent excessive GPU overload
             const now = Date.now();
-            if (now - lastProcessedTimeRef.current < 33) {
+            if (now - lastProcessedTimeRef.current < 16) {
               return;
             }
             lastProcessedTimeRef.current = now;
@@ -561,7 +561,7 @@ export function HandTrackingProvider({ children }) {
           },
           width: 640,
           height: 480,
-          fps: 30 // Request 30 FPS from the webcam stream
+          fps: 60 // Request 60 FPS from the webcam stream
         });
         mediaPipeCameraRef.current = cameraObj;
         cameraObj.start();
