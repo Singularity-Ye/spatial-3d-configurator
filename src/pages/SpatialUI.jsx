@@ -1484,6 +1484,7 @@ function Turbine({ explode, turbineRef, configMode, selectedMeshIdx, hoveredMesh
 // Scene controller that binds models, rotation physics, and hotspots
 function SpatialScene({
   activeModel,
+  fuseTriggered,
   explode,
   setExplode,
   selectedPartId,
@@ -2866,6 +2867,7 @@ export default function SpatialUI() {
               <Suspense fallback={null}>
                 <SpatialScene
                   activeModel={activeModel}
+                  fuseTriggered={fuseTriggered}
                   explode={explodeAmount}
                   setExplode={setExplodeAmount}
                   selectedPartId={selectedPartId}
