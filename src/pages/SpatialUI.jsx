@@ -685,23 +685,23 @@ const TURBINE_PARTS = {
       power: '---',
       efficiency: '94.5%'
     },
-    pos: [0, 0.9, 0.4]
+    pos: [0, 1.25, 0.83]
   },
   '02': {
-    id: 'WT-GS-002',
-    name: '行星齿轮级',
-    title: '02 行星齿轮级',
-    desc: '两级行星齿轮及一级平行齿轮增速机构，将低速轴增速至额定发电转速。',
+    id: 'WT-BH-002',
+    name: '主轴承座箱',
+    title: '02 主轴承座箱',
+    desc: '重载调心滚子轴承座，承受风力发电机偏航与俯仰弯矩扭矩载荷。',
     specs: {
-      material: '合金渗碳钢 18CrNiMo7-6',
-      weight: '15.20 吨',
+      material: '高韧性球墨铸铁 QT400',
+      weight: '9.35 吨',
       status: '正常',
-      temp: '54.5 ℃',
-      vibration: '2.4 mm/s',
+      temp: '45.8 ℃',
+      vibration: '1.5 mm/s',
       power: '---',
-      efficiency: '97.8%'
+      efficiency: '99.1%'
     },
-    pos: [0, 0.95, -0.15]
+    pos: [0, 1.17, -0.6]
   },
   '03': {
     id: 'WT-CS-003',
@@ -717,13 +717,29 @@ const TURBINE_PARTS = {
       power: '---',
       efficiency: '98.5%'
     },
-    pos: [0, 0.8, -0.35]
+    pos: [0, 1.17, 0.15]
   },
   '04': {
-    id: 'WT-PM-004',
-    name: '变频功率模块',
-    title: '04 变频功率模块',
-    desc: '全功率变流集成柜，实现网侧与电机侧双向变流与电能调制。',
+    id: 'WT-GS-004',
+    name: '行星齿轮级',
+    title: '04 行星齿轮级',
+    desc: '两级行星齿轮及一级平行齿轮增速机构，将低速轴增速至额定发电转速。',
+    specs: {
+      material: '合金渗碳钢 18CrNiMo7-6',
+      weight: '15.20 吨',
+      status: '正常',
+      temp: '54.5 ℃',
+      vibration: '2.4 mm/s',
+      power: '---',
+      efficiency: '97.8%'
+    },
+    pos: [0, 1.29, 0.38]
+  },
+  '05': {
+    id: 'WT-PM-005',
+    name: '发电机模块',
+    title: '05 发电机模块',
+    desc: '全功率变流集成柜与双馈发电机，实现网侧与电机侧双向变流与电能调制。',
     specs: {
       material: 'IGBT 晶闸管阵列',
       weight: '3.10 吨',
@@ -733,92 +749,12 @@ const TURBINE_PARTS = {
       power: '3.2 MW',
       efficiency: '96.8%'
     },
-    pos: [0, 0.9, -0.6]
-  },
-  '05': {
-    id: 'WT-OP-005',
-    name: '循环油泵组',
-    title: '05 循环油泵组',
-    desc: '压力强制润滑系统，提供齿轮箱与轴承温控润滑介质。',
-    specs: {
-      material: '不锈钢泵体',
-      weight: '0.85 吨',
-      status: '运行',
-      temp: '38.4 ℃',
-      vibration: '3.1 mm/s',
-      power: '45 kW',
-      efficiency: '88.5%'
-    },
-    pos: [0, 0.3, -0.2]
+    pos: [0, 1.25, -0.2]
   },
   '06': {
-    id: 'WT-BH-006',
-    name: '主轴承座箱',
-    title: '06 主轴承座箱',
-    desc: '重载调心滚子轴承座，承受风力发电机偏航与俯仰弯矩扭矩载荷。',
-    specs: {
-      material: '高韧性球墨铸铁 QT400',
-      weight: '9.35 吨',
-      status: '正常',
-      temp: '45.8 ℃',
-      vibration: '1.5 mm/s',
-      power: '---',
-      efficiency: '99.1%'
-    },
-    pos: [0, 0.85, -0.8]
-  },
-  '07': {
-    id: 'WT-CU-007',
-    name: '偏航与主控柜',
-    title: '07 偏航与主控柜',
-    desc: '偏航电机驱动器与PLC主控单元，自适应偏航对风与变桨调节。',
-    specs: {
-      material: 'PLC 变频伺服系统',
-      weight: '1.20 吨',
-      status: '正常',
-      temp: '35.6 ℃',
-      vibration: '0.5 mm/s',
-      power: '22 kW',
-      efficiency: '95.0%'
-    },
-    pos: [0, 0.2, -0.5]
-  },
-  '08': {
-    id: 'WT-PD-008',
-    name: '变桨电机',
-    title: '08 变桨驱动电机',
-    desc: '控制叶片偏转仰角的伺服变桨伺服电机，实现大风速段限速保护与变角控频。',
-    specs: {
-      material: '永磁钕铁硼同步电机',
-      weight: '0.45 吨',
-      status: '正常',
-      temp: '40.1 ℃',
-      vibration: '0.8 mm/s',
-      power: '15 kW',
-      efficiency: '94.0%'
-    },
-    pos: [0, 0, 0]
-  },
-  '09': {
-    id: 'WT-HB-009',
-    name: '液压制动器',
-    title: '09 液压主制动器',
-    desc: '紧急安全高速轴盘式液压制动系统，提供紧急制动机械锁死保护。',
-    specs: {
-      material: '高强度摩擦材料 / 钢',
-      weight: '0.65 吨',
-      status: '待命',
-      temp: '38.2 ℃',
-      vibration: '0.1 mm/s',
-      power: '---',
-      efficiency: '99.5%'
-    },
-    pos: [0, 0, 0]
-  },
-  '10': {
-    id: 'WT-YR-010',
-    name: '偏航大齿圈',
-    title: '10 偏航大齿圈',
+    id: 'WT-YR-006',
+    name: '偏航回转齿圈',
+    title: '06 偏航回转齿圈',
     desc: '大型内啮合重载回转支承大齿齿轮圈，承载整个机舱的偏航负载与剪切力。',
     specs: {
       material: '碳素铸钢 ZG310-570',
@@ -829,39 +765,7 @@ const TURBINE_PARTS = {
       power: '---',
       efficiency: '98.0%'
     },
-    pos: [0, 0, 0]
-  },
-  '11': {
-    id: 'WT-AN-011',
-    name: '气象风速仪',
-    title: '11 气象风速仪',
-    desc: '机舱顶部尾端搭载的超声波环境风速风向仪，提供主控迎风数据反馈。',
-    specs: {
-      material: '防腐蚀不锈钢 / 碳纤维',
-      weight: '0.05 吨',
-      status: '运行',
-      temp: '18.5 ℃',
-      vibration: '0.0 mm/s',
-      power: '---',
-      efficiency: '99.0%'
-    },
-    pos: [0, 0, 0]
-  },
-  '12': {
-    id: 'WT-YD-012',
-    name: '偏航减速箱',
-    title: '12 偏航行星减速箱',
-    desc: '多级行星齿轮减速机，为偏航对风运动提供极高的大扭矩减速增力。',
-    specs: {
-      material: '合金渗碳钢',
-      weight: '0.75 吨',
-      status: '正常',
-      temp: '39.4 ℃',
-      vibration: '1.2 mm/s',
-      power: '11 kW',
-      efficiency: '92.5%'
-    },
-    pos: [0, 0, 0]
+    pos: [0, 0.45, -0.45]
   }
 };
 
@@ -1162,24 +1066,18 @@ function Battery({ explode }) {
 // Helper to map Turbine part IDs to their initial local coordinates in the GLB
 const getTurbinePartLocalPos = (id) => {
   switch (id) {
-    case '01': return [0, 1.25, 0.83];
-    case '02': return [0, 1.29, 0.38];
-    case '03': return [0, 1.17, 0.15];
-    case '04': return [0, 1.25, -0.2];
-    case '05': return [0, 0.75, -0.4];
-    case '06': return [0, 1.17, -0.6];
-    case '07': return [0, 0.67, -0.3];
-    case '08': return [0.25, 1.35, 0.85];
-    case '09': return [-0.15, 1.25, 0.05];
-    case '10': return [0, 0.45, -0.45];
-    case '11': return [0, 1.65, -0.85];
-    case '12': return [0.18, 0.55, -0.55];
+    case '01': return [0, 1.25, 0.83];     // Blades
+    case '02': return [0, 1.17, -0.6];     // Main bearing seat box
+    case '03': return [0, 1.17, 0.15];     // Shaft system
+    case '04': return [0, 1.29, 0.38];     // Gearbox
+    case '05': return [0, 1.25, -0.2];     // Generator
+    case '06': return [0, 0.45, -0.45];    // Yaw gear ring
     default: return [0, 0, 0];
   }
 };
 
 // Procedural high-fidelity Wind Turbine Model loaded from GLB
-function Turbine({ explode, turbineRef }) {
+function Turbine({ explode, turbineRef, configMode, selectedMeshIdx, hoveredMeshIdx }) {
   const { scene } = useGLTF("/model/glb/turbine.glb");
 
   useFrame((state, delta) => {
@@ -1211,6 +1109,52 @@ function Turbine({ explode, turbineRef }) {
     }
   });
 
+  // Dynamically swap materials for configuration mode highlights
+  useEffect(() => {
+    if (!turbineRef.current) return;
+    const children = turbineRef.current.children;
+    if (!children) return;
+
+    children.forEach((child, index) => {
+      if (child.isMesh) {
+        if (!child.userData.originalMaterial) {
+          child.userData.originalMaterial = child.material;
+        }
+
+        if (configMode) {
+          if (index === selectedMeshIdx) {
+            // Selected mesh: bright solid gold
+            child.material = new THREE.MeshStandardMaterial({
+              color: '#f59e0b',
+              emissive: '#b45309',
+              roughness: 0.1,
+              metalness: 0.8
+            });
+          } else if (index === hoveredMeshIdx) {
+            // Hovered mesh: cyan
+            child.material = new THREE.MeshStandardMaterial({
+              color: '#06b6d4',
+              emissive: '#0891b2',
+              roughness: 0.2,
+              metalness: 0.5
+            });
+          } else {
+            // Semi-transparent other meshes
+            child.material = new THREE.MeshPhysicalMaterial({
+              color: '#475569',
+              transparent: true,
+              opacity: 0.18,
+              depthWrite: false
+            });
+          }
+        } else {
+          // Restore original material
+          child.material = child.userData.originalMaterial;
+        }
+      }
+    });
+  }, [configMode, selectedMeshIdx, hoveredMeshIdx, turbineRef, scene]);
+
   return (
     <group scale={1.2} position={[0, -0.6, 0]} rotation={[0, Math.PI / 2, 0]}>
       <Clone
@@ -1237,7 +1181,17 @@ function SpatialScene({
   setCameraPreset,
   focusMode,
   hoveredPartId,
-  setHoveredPartId
+  setHoveredPartId,
+  configMode,
+  selectedMeshIdx,
+  setSelectedMeshIdx,
+  hoveredMeshIdx,
+  setHoveredMeshIdx,
+  customTurbineParts,
+  setCustomTurbineParts,
+  partMeshIndices,
+  setPartMeshIndices,
+  onModelLoaded
 }) {
   const groupRef = useRef();
   const tickRingRef = useRef();
@@ -1245,13 +1199,12 @@ function SpatialScene({
   const isPinchingRef = useRef(false);
   const prevCursorRef = useRef({ x: 0, y: 0 });
 
-  const [partMeshIndices, setPartMeshIndices] = useState({});
   const mappingCalculated = useRef(false);
 
   useEffect(() => {
     mappingCalculated.current = false;
     setPartMeshIndices({});
-  }, [activeModel]);
+  }, [activeModel, setPartMeshIndices]);
 
   const { cursor, handDetected, trackingMode, isPinching } = useHandTracking();
 
@@ -1265,7 +1218,7 @@ function SpatialScene({
       const children = turbineRef.current.children;
       if (children && children.length > 0) {
         const mapping = {};
-        Object.entries(TURBINE_PARTS).forEach(([id, item]) => {
+        Object.entries(customTurbineParts).forEach(([id, item]) => {
           let closestChildIndex = -1;
           let minDistance = Infinity;
           const [lx, ly, lz] = getTurbinePartLocalPos(id);
@@ -1273,7 +1226,14 @@ function SpatialScene({
 
           children.forEach((child, index) => {
             if (child.isMesh) {
-              const dist = child.position.distanceTo(targetPos);
+              if (!child.geometry.boundingBox) {
+                child.geometry.computeBoundingBox();
+              }
+              const center = new THREE.Vector3();
+              child.geometry.boundingBox.getCenter(center);
+              center.applyMatrix4(child.matrix);
+              
+              const dist = center.distanceTo(targetPos);
               if (dist < minDistance) {
                 minDistance = dist;
                 closestChildIndex = index;
@@ -1284,6 +1244,18 @@ function SpatialScene({
         });
         setPartMeshIndices(mapping);
         mappingCalculated.current = true;
+
+        // Populate mesh list for configuration panel
+        const list = children.map((c, i) => ({
+          index: i,
+          name: c.name,
+          isMesh: c.isMesh
+        }));
+        setTimeout(() => {
+          if (onModelLoaded) {
+            onModelLoaded(list);
+          }
+        }, 0);
       }
     }
 
@@ -1374,7 +1346,7 @@ function SpatialScene({
 
   const partsData = activeModel === 'fridge' 
     ? FRIDGE_PARTS 
-    : (activeModel === 'battery' ? BATTERY_PARTS : TURBINE_PARTS);
+    : (activeModel === 'battery' ? BATTERY_PARTS : customTurbineParts);
 
   const getExplodedPosition = useCallback((id, pos) => {
     const [x, y, z] = pos;
@@ -1384,41 +1356,23 @@ function SpatialScene({
       let localZ = 0;
       
       switch (id) {
-        case '01': // Fan Rotor (Blades)
+        case '01': // Blades
           localX = 0; localY = 1.25; localZ = 0.83;
           break;
-        case '02': // Gear Stage
-          localX = 0; localY = 1.29; localZ = 0.38;
+        case '02': // Main Bearing Box
+          localX = 0; localY = 1.17; localZ = -0.6;
           break;
         case '03': // Core Shaft
           localX = 0; localY = 1.17; localZ = 0.15;
           break;
-        case '04': // Power Module
+        case '04': // Gearbox
+          localX = 0; localY = 1.29; localZ = 0.38;
+          break;
+        case '05': // Generator
           localX = 0; localY = 1.25; localZ = -0.2;
           break;
-        case '05': // Oil Pump
-          localX = 0; localY = 0.75; localZ = -0.4;
-          break;
-        case '06': // Bearing Housing
-          localX = 0; localY = 1.17; localZ = -0.6;
-          break;
-        case '07': // Control Unit
-          localX = 0; localY = 0.67; localZ = -0.3;
-          break;
-        case '08': // Pitch Drive Motor
-          localX = 0.25; localY = 1.35; localZ = 0.85;
-          break;
-        case '09': // Hydraulic Brake
-          localX = -0.15; localY = 1.25; localZ = 0.05;
-          break;
-        case '10': // Yaw Ring Gear
+        case '06': // Yaw Gear Ring
           localX = 0; localY = 0.45; localZ = -0.45;
-          break;
-        case '11': // Anemometer
-          localX = 0; localY = 1.65; localZ = -0.85;
-          break;
-        case '12': // Yaw Reducer
-          localX = 0.18; localY = 0.55; localZ = -0.55;
           break;
         default:
           return pos;
@@ -1525,7 +1479,13 @@ function SpatialScene({
         ) : activeModel === 'battery' ? (
           <Battery explode={explode} />
         ) : (
-          <Turbine explode={explode} turbineRef={turbineRef} />
+          <Turbine 
+            explode={explode} 
+            turbineRef={turbineRef} 
+            configMode={configMode}
+            selectedMeshIdx={selectedMeshIdx}
+            hoveredMeshIdx={hoveredMeshIdx}
+          />
         )}
 
         {/* Render respective tag nodes */}
@@ -1564,6 +1524,48 @@ function SpatialScene({
             />
           );
         })}
+
+        {/* Temporary tag node helper for Configurator mode */}
+        {configMode && selectedMeshIdx >= 0 && turbineRef.current && (
+          (() => {
+            const child = turbineRef.current.children[selectedMeshIdx];
+            if (child && child.isMesh) {
+              if (!child.geometry.boundingBox) {
+                child.geometry.computeBoundingBox();
+              }
+              const center = new THREE.Vector3();
+              child.geometry.boundingBox.getCenter(center);
+              center.applyMatrix4(child.matrix);
+              
+              const tempPos = [
+                center.z * 1.2,
+                center.y * 1.2 - 0.6,
+                -center.x * 1.2
+              ];
+              
+              const isAlreadyTagged = Object.entries(partMeshIndices).some(([pid, idx]) => idx === selectedMeshIdx);
+              
+              if (!isAlreadyTagged) {
+                return (
+                  <TagNode
+                    key="temp-config-tag"
+                    partId="?"
+                    name="待配置网格"
+                    position={tempPos}
+                    isSelected={true}
+                    isHovered={false}
+                    onSelect={() => {}}
+                    onHover={() => {}}
+                    explode={explode}
+                    desc={`网格名称: ${child.name || 'Unnamed'}`}
+                    partCode={`INDEX-${selectedMeshIdx}`}
+                  />
+                );
+              }
+            }
+            return null;
+          })()
+        )}
       </group>
     </>
   );
@@ -1797,6 +1799,14 @@ export default function SpatialUI() {
   const [tempTelemetryShow, setTempTelemetryShow] = useState(false);
   const [tempConfigShow, setTempConfigShow] = useState(false);
 
+  // Tag Configuration Mode States
+  const [configMode, setConfigMode] = useState(false);
+  const [selectedMeshIdx, setSelectedMeshIdx] = useState(-1);
+  const [hoveredMeshIdx, setHoveredMeshIdx] = useState(-1);
+  const [customTurbineParts, setCustomTurbineParts] = useState(TURBINE_PARTS);
+  const [meshList, setMeshList] = useState([]);
+  const [partMeshIndices, setPartMeshIndices] = useState({});
+
   // Hook states
   const {
     trackingMode,
@@ -1812,6 +1822,9 @@ export default function SpatialUI() {
   // Reset selected part when switching models
   React.useEffect(() => {
     setSelectedPartId('01');
+    setMeshList([]);
+    setSelectedMeshIdx(-1);
+    setHoveredMeshIdx(-1);
   }, [activeModel]);
 
   const handleBack = () => {
@@ -1820,7 +1833,7 @@ export default function SpatialUI() {
 
   const partsData = activeModel === 'fridge' 
     ? FRIDGE_PARTS 
-    : (activeModel === 'battery' ? BATTERY_PARTS : TURBINE_PARTS);
+    : (activeModel === 'battery' ? BATTERY_PARTS : customTurbineParts);
 
   const selectedPart = partsData[selectedPartId] || Object.values(partsData)[0];
   const activePart = hoveredPartId ? partsData[hoveredPartId] : selectedPart;
@@ -2047,6 +2060,16 @@ export default function SpatialUI() {
                   focusMode={focusMode}
                   hoveredPartId={hoveredPartId}
                   setHoveredPartId={setHoveredPartId}
+                  configMode={configMode}
+                  selectedMeshIdx={selectedMeshIdx}
+                  setSelectedMeshIdx={setSelectedMeshIdx}
+                  hoveredMeshIdx={hoveredMeshIdx}
+                  setHoveredMeshIdx={setHoveredMeshIdx}
+                  customTurbineParts={customTurbineParts}
+                  setCustomTurbineParts={setCustomTurbineParts}
+                  partMeshIndices={partMeshIndices}
+                  setPartMeshIndices={setPartMeshIndices}
+                  onModelLoaded={setMeshList}
                 />
                 <OrbitControls
                   enableZoom={true}
@@ -2155,100 +2178,402 @@ export default function SpatialUI() {
 
         {/* Right Side: Model Parameter Configuration */}
         <Sidebar $right $collapsed={rightCollapsed}>
-          <HudCard>
-            <h3>展示对象库</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginTop: '0.3rem' }}>
-              {[
-                { id: 'turbine', label: '风力发电机', desc: 'MW 级双馈风力发电机', icon: '⚙️' },
-                { id: 'battery', label: '电池能量包', desc: '固态聚合物电解质电池', icon: '🔋' },
-                { id: 'fridge', label: '智能冷藏柜', desc: '全息智能温控冷藏机', icon: '❄️' }
-              ].map(item => (
-                <ObjectItem
-                  key={item.id}
-                  $active={activeModel === item.id}
-                  onClick={() => {
-                    setActiveModel(item.id);
+          {configMode ? (
+            <HudCard style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem', minHeight: '450px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h3 style={{ borderLeftColor: '#eab308' }}>🔧 标签配置中心</h3>
+                <button 
+                  onClick={() => setConfigMode(false)}
+                  style={{
+                    background: 'rgba(239, 68, 68, 0.15)',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    color: '#ef4444',
+                    fontSize: '0.6rem',
+                    padding: '0.15rem 0.45rem',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
                   }}
+                  onMouseEnter={(e) => { e.target.style.background = 'rgba(239, 68, 68, 0.25)' }}
+                  onMouseLeave={(e) => { e.target.style.background = 'rgba(239, 68, 68, 0.15)' }}
                 >
-                  <div className="label-group">
-                    <span style={{ fontSize: '1rem' }}>{item.icon}</span>
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <span style={{ fontWeight: 600 }}>{item.label}</span>
-                      <span style={{ fontSize: '0.6rem', color: '#94a3b8', marginTop: '1px' }}>{item.desc}</span>
+                  退出配置
+                </button>
+              </div>
+
+              {activeModel !== 'turbine' ? (
+                <div style={{ fontSize: '0.7rem', color: '#94a3b8', padding: '1rem 0' }}>
+                  目前仅支持风力发电机模型的子网格标签配置。
+                </div>
+              ) : (
+                <>
+                  <span style={{ fontSize: '0.6rem', color: '#94a3b8' }}>
+                    在下方列表或视口中直接点击以选中子网格进行全息标签绑定。
+                  </span>
+
+                  <div style={{ maxHeight: '130px', overflowY: 'auto', border: '1px solid rgba(80, 180, 255, 0.12)', borderRadius: '6px', padding: '0.2rem', background: 'rgba(0,0,0,0.22)', scrollbarWidth: 'thin' }}>
+                    {meshList.length === 0 ? (
+                      <span style={{ fontSize: '0.62rem', color: '#94a3b8', padding: '0.5rem', display: 'block' }}>模型网格加载中...</span>
+                    ) : (
+                      meshList.map((mesh) => {
+                        const isMesh = mesh.isMesh;
+                        if (!isMesh) return null;
+                        const idx = mesh.index;
+                        const name = mesh.name;
+                        
+                        const mappedPartId = Object.entries(partMeshIndices).find(([pid, mIdx]) => mIdx === idx)?.[0];
+                        const isTagged = !!mappedPartId && !!customTurbineParts[mappedPartId];
+
+                        return (
+                          <div
+                            key={idx}
+                            onMouseEnter={() => setHoveredMeshIdx(idx)}
+                            onMouseLeave={() => setHoveredMeshIdx(-1)}
+                            onClick={() => setSelectedMeshIdx(idx)}
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              padding: '0.25rem 0.45rem',
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              fontSize: '0.62rem',
+                              fontFamily: 'JetBrains Mono, monospace',
+                              background: selectedMeshIdx === idx 
+                                ? 'rgba(234, 158, 11, 0.18)' 
+                                : (hoveredMeshIdx === idx ? 'rgba(6, 182, 212, 0.08)' : 'transparent'),
+                              border: `1px solid ${selectedMeshIdx === idx 
+                                ? '#eab308' 
+                                : (hoveredMeshIdx === idx ? 'rgba(6, 182, 212, 0.3)' : 'transparent')}`,
+                              color: isTagged ? '#00f0ff' : '#cbd5e1',
+                              marginBottom: '2px'
+                            }}
+                          >
+                            <span>#{idx.toString().padStart(2, '0')} {name}</span>
+                            {isTagged && (
+                              <span style={{ fontSize: '0.55rem', background: 'rgba(0, 240, 255, 0.15)', padding: '0.02rem 0.2rem', borderRadius: '3px', border: '1px solid rgba(0, 240, 255, 0.3)' }}>
+                                已绑定 {mappedPartId}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+
+                  {selectedMeshIdx >= 0 ? (
+                    (() => {
+                      const matchedPartId = Object.entries(partMeshIndices).find(([pid, idx]) => idx === selectedMeshIdx)?.[0];
+                      const partInfo = matchedPartId ? customTurbineParts[matchedPartId] : null;
+
+                      return (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '0.4rem', flex: 1, overflowY: 'auto', paddingRight: '4px', scrollbarWidth: 'thin' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#eab308' }}>
+                              配置网格 #{selectedMeshIdx}
+                            </span>
+                            {partInfo ? (
+                              <button
+                                onClick={() => {
+                                  const updatedParts = { ...customTurbineParts };
+                                  delete updatedParts[matchedPartId];
+                                  setCustomTurbineParts(updatedParts);
+                                  
+                                  const updatedIndices = { ...partMeshIndices };
+                                  delete updatedIndices[matchedPartId];
+                                  setPartMeshIndices(updatedIndices);
+                                }}
+                                style={{
+                                  background: 'rgba(239, 68, 68, 0.12)',
+                                  border: '1px solid rgba(239, 68, 68, 0.25)',
+                                  color: '#ef4444',
+                                  fontSize: '0.58rem',
+                                  padding: '0.1rem 0.35rem',
+                                  borderRadius: '3px',
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                移除绑定
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => {
+                                  const newPartId = (Object.keys(customTurbineParts).length + 1).toString().padStart(2, '0');
+                                  const newPart = {
+                                    id: `WT-CUSTOM-${newPartId}`,
+                                    name: `自定义零件 ${newPartId}`,
+                                    title: `${newPartId} 自定义零件`,
+                                    desc: '请输入该零件的全息描述信息。',
+                                    specs: {
+                                      material: '合金钢',
+                                      weight: '1.0 吨',
+                                      status: '正常',
+                                      temp: '25.0 ℃',
+                                      vibration: '0.0 mm/s',
+                                      power: '---',
+                                      efficiency: '95.0%'
+                                    },
+                                    pos: [0, 0, 0]
+                                  };
+                                  setCustomTurbineParts({
+                                    ...customTurbineParts,
+                                    [newPartId]: newPart
+                                  });
+                                  setPartMeshIndices({
+                                    ...partMeshIndices,
+                                    [newPartId]: selectedMeshIdx
+                                  });
+                                }}
+                                style={{
+                                  background: 'rgba(16, 185, 129, 0.15)',
+                                  border: '1px solid rgba(16, 185, 129, 0.3)',
+                                  color: '#10b981',
+                                  fontSize: '0.58rem',
+                                  padding: '0.12rem 0.45rem',
+                                  borderRadius: '3px',
+                                  cursor: 'pointer',
+                                  fontWeight: 600
+                                }}
+                              >
+                                + 绑定全息标签
+                              </button>
+                            )}
+                          </div>
+
+                          {partInfo && (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', fontSize: '0.62rem' }}>
+                              <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '0.3rem', alignItems: 'center' }}>
+                                <label style={{ color: '#94a3b8' }}>标签编号 (ID):</label>
+                                <input
+                                  type="text"
+                                  value={partInfo.id}
+                                  onChange={(e) => {
+                                    const updated = { ...customTurbineParts };
+                                    updated[matchedPartId].id = e.target.value;
+                                    setCustomTurbineParts(updated);
+                                  }}
+                                  style={{ background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(80,180,255,0.2)', color: '#fff', padding: '0.15rem 0.3rem', borderRadius: '3px', fontSize: '0.62rem', outline: 'none' }}
+                                />
+                              </div>
+
+                              <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '0.3rem', alignItems: 'center' }}>
+                                <label style={{ color: '#94a3b8' }}>零件名称:</label>
+                                <input
+                                  type="text"
+                                  value={partInfo.name}
+                                  onChange={(e) => {
+                                    const updated = { ...customTurbineParts };
+                                    updated[matchedPartId].name = e.target.value;
+                                    updated[matchedPartId].title = `${matchedPartId} ${e.target.value}`;
+                                    setCustomTurbineParts(updated);
+                                  }}
+                                  style={{ background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(80,180,255,0.2)', color: '#fff', padding: '0.15rem 0.3rem', borderRadius: '3px', fontSize: '0.62rem', outline: 'none' }}
+                                />
+                              </div>
+
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.1rem' }}>
+                                <label style={{ color: '#94a3b8' }}>描述文字:</label>
+                                <textarea
+                                  rows={2}
+                                  value={partInfo.desc}
+                                  onChange={(e) => {
+                                    const updated = { ...customTurbineParts };
+                                    updated[matchedPartId].desc = e.target.value;
+                                    setCustomTurbineParts(updated);
+                                  }}
+                                  style={{ background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(80,180,255,0.2)', color: '#fff', padding: '0.15rem 0.3rem', borderRadius: '3px', fontSize: '0.62rem', resize: 'none', outline: 'none' }}
+                                />
+                              </div>
+
+                              <div style={{ borderTop: '1px dashed rgba(255,255,255,0.06)', margin: '0.2rem 0' }} />
+
+                              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.3rem' }}>
+                                <div>
+                                  <label style={{ color: '#94a3b8', display: 'block', marginBottom: '2px' }}>重量规格:</label>
+                                  <input
+                                    type="text"
+                                    value={partInfo.specs.weight}
+                                    onChange={(e) => {
+                                      const updated = { ...customTurbineParts };
+                                      updated[matchedPartId].specs.weight = e.target.value;
+                                      setCustomTurbineParts(updated);
+                                    }}
+                                    style={{ background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(80,180,255,0.2)', color: '#fff', padding: '0.15rem 0.3rem', borderRadius: '3px', fontSize: '0.58rem', width: '100%', boxSizing: 'border-box', outline: 'none' }}
+                                  />
+                                </div>
+                                <div>
+                                  <label style={{ color: '#94a3b8', display: 'block', marginBottom: '2px' }}>材料特性:</label>
+                                  <input
+                                    type="text"
+                                    value={partInfo.specs.material}
+                                    onChange={(e) => {
+                                      const updated = { ...customTurbineParts };
+                                      updated[matchedPartId].specs.material = e.target.value;
+                                      setCustomTurbineParts(updated);
+                                    }}
+                                    style={{ background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(80,180,255,0.2)', color: '#fff', padding: '0.15rem 0.3rem', borderRadius: '3px', fontSize: '0.58rem', width: '100%', boxSizing: 'border-box', outline: 'none' }}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()
+                  ) : (
+                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px dashed rgba(80, 180, 255, 0.15)', borderRadius: '6px', background: 'rgba(0,0,0,0.1)', padding: '1rem' }}>
+                      <span style={{ fontSize: '0.62rem', color: '#94a3b8', textAlign: 'center' }}>未选中任何网格零件，请在 3D 视图或上方列表中选中一个部件。</span>
+                    </div>
+                  )}
+
+                  <button
+                    onClick={() => {
+                      const exportedJson = JSON.stringify(customTurbineParts, null, 2);
+                      navigator.clipboard.writeText(exportedJson);
+                      alert('发电机标签配置已成功复制到剪贴板！请将其粘贴替换到 SpatialUI.jsx 中的 TURBINE_PARTS 对象中。');
+                    }}
+                    style={{
+                      background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                      border: 'none',
+                      color: '#fff',
+                      fontSize: '0.65rem',
+                      fontWeight: 600,
+                      padding: '0.45rem',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 12px rgba(37, 99, 235, 0.2)',
+                      textAlign: 'center',
+                      marginTop: '0.2rem',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => { e.target.style.transform = 'translateY(-1px)'; e.target.style.boxShadow = '0 6px 14px rgba(37, 99, 235, 0.3)' }}
+                    onMouseLeave={(e) => { e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = '0 4px 12px rgba(37, 99, 235, 0.2)' }}
+                  >
+                    💾 导出并复制代码
+                  </button>
+                </>
+              )}
+            </HudCard>
+          ) : (
+            <>
+              <HudCard>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <h3>展示对象库</h3>
+                  {activeModel === 'turbine' && (
+                    <button 
+                      onClick={() => setConfigMode(true)}
+                      style={{
+                        background: 'rgba(80, 180, 255, 0.15)',
+                        border: '1px solid rgba(80, 180, 255, 0.3)',
+                        color: '#00f0ff',
+                        fontSize: '0.62rem',
+                        padding: '0.18rem 0.45rem',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontWeight: 600,
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseEnter={(e) => { e.target.style.background = 'rgba(80, 180, 255, 0.25)' }}
+                      onMouseLeave={(e) => { e.target.style.background = 'rgba(80, 180, 255, 0.15)' }}
+                    >
+                      🔧 标签配置
+                    </button>
+                  )}
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginTop: '0.3rem' }}>
+                  {[
+                    { id: 'turbine', label: '风力发电机', desc: 'MW 级双馈风力发电机', icon: '⚙️' },
+                    { id: 'battery', label: '电池能量包', desc: '固态聚合物电解质电池', icon: '🔋' },
+                    { id: 'fridge', label: '智能冷藏柜', desc: '全息智能温控冷藏机', icon: '❄️' }
+                  ].map(item => (
+                    <ObjectItem
+                      key={item.id}
+                      $active={activeModel === item.id}
+                      onClick={() => {
+                        setActiveModel(item.id);
+                      }}
+                    >
+                      <div className="label-group">
+                        <span style={{ fontSize: '1rem' }}>{item.icon}</span>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                          <span style={{ fontWeight: 600 }}>{item.label}</span>
+                          <span style={{ fontSize: '0.6rem', color: '#94a3b8', marginTop: '1px' }}>{item.desc}</span>
+                        </div>
+                      </div>
+                      <div className="status-indicator" />
+                    </ObjectItem>
+                  ))}
+                </div>
+              </HudCard>
+
+              <HudCard>
+                <h3>零件浏览器</h3>
+                <div style={{ maxHeight: '180px', overflowY: 'auto', paddingRight: '4px', scrollbarWidth: 'thin' }}>
+                  <TreeContainer>
+                    {Object.entries(partsData).map(([id, item]) => (
+                      <TreeItem
+                        key={id}
+                        $active={selectedPartId === id}
+                        onClick={() => setSelectedPartId(id)}
+                      >
+                        <span style={{ color: selectedPartId === id ? '#00f0ff' : 'rgba(80, 180, 255, 0.65)' }}>{id}</span>
+                        <span>{item.name}</span>
+                      </TreeItem>
+                    ))}
+                  </TreeContainer>
+                </div>
+              </HudCard>
+
+              <HudCard style={{ flex: 1 }}>
+                <h3>
+                  组件全息数据
+                  {hoveredPartId && (
+                    <span style={{ color: '#00f0ff', fontSize: '0.62rem', marginLeft: '0.4rem', fontWeight: 500, letterSpacing: '0.05em' }}>
+                      (实时预览)
+                    </span>
+                  )}
+                </h3>
+                {activePart ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', height: '100%' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '0.8rem', fontWeight: 700, color: hoveredPartId ? '#00f0ff' : '#fff', transition: 'color 0.2s' }}>
+                        {activePart.name}
+                      </span>
+                      <span style={{ fontSize: '0.6rem', fontFamily: 'JetBrains Mono', background: 'rgba(80,180,255,0.12)', padding: '0.1rem 0.35rem', borderRadius: '4px', border: '1px solid rgba(80,180,255,0.2)' }}>
+                        {activePart.id}
+                      </span>
+                    </div>
+                    
+                    <p style={{ margin: 0, fontSize: '0.68rem', color: '#94a3b8', lineHeight: 1.45 }}>
+                      {activePart.desc}
+                    </p>
+                    
+                    <div style={{ height: '1px', background: 'rgba(80, 180, 255, 0.12)', margin: '0.2rem 0' }} />
+                    
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.35rem 0.6rem', fontSize: '0.65rem', fontFamily: 'JetBrains Mono, monospace', color: '#cbd5e1' }}>
+                      <div>材料: <span style={{ color: '#fff' }}>{activePart.specs.material}</span></div>
+                      <div>重量: <span style={{ color: '#fff' }}>{activePart.specs.weight}</span></div>
+                      <div>状态: <span style={{ color: activePart.specs.status.includes('Active') || activePart.specs.status.includes('Running') || activePart.specs.status.includes('Healthy') || activePart.specs.status.includes('Online') || activePart.specs.status.includes('正常') || activePart.specs.status.includes('活动') || activePart.specs.status.includes('运行') || activePart.specs.status.includes('在线') ? '#10b981' : '#ffaa00' }}>
+                        {activePart.specs.status}
+                      </span></div>
+                      <div>温度: <span style={{ color: '#fff' }}>{activePart.specs.temp}</span></div>
+                      {activePart.specs.vibration && activePart.specs.vibration !== '---' && (
+                        <div style={{ gridColumn: 'span 2' }}>振动: <span style={{ color: '#fff' }}>{activePart.specs.vibration}</span></div>
+                      )}
+                      {activePart.specs.power && activePart.specs.power !== '---' && (
+                        <div style={{ gridColumn: 'span 2' }}>功率: <span style={{ color: '#fff' }}>{activePart.specs.power}</span></div>
+                      )}
+                      {activePart.specs.efficiency && activePart.specs.efficiency !== '---' && (
+                        <div style={{ gridColumn: 'span 2' }}>效率: <span style={{ color: '#fff' }}>{activePart.specs.efficiency}</span></div>
+                      )}
                     </div>
                   </div>
-                  <div className="status-indicator" />
-                </ObjectItem>
-              ))}
-            </div>
-          </HudCard>
-
-          <HudCard>
-            <h3>零件浏览器</h3>
-            <div style={{ maxHeight: '180px', overflowY: 'auto', paddingRight: '4px', scrollbarWidth: 'thin' }}>
-              <TreeContainer>
-                {Object.entries(partsData).map(([id, item]) => (
-                  <TreeItem
-                    key={id}
-                    $active={selectedPartId === id}
-                    onClick={() => setSelectedPartId(id)}
-                  >
-                    <span style={{ color: selectedPartId === id ? '#00f0ff' : 'rgba(80, 180, 255, 0.65)' }}>{id}</span>
-                    <span>{item.name}</span>
-                  </TreeItem>
-                ))}
-              </TreeContainer>
-            </div>
-          </HudCard>
-
-          <HudCard style={{ flex: 1 }}>
-            <h3>
-              组件全息数据
-              {hoveredPartId && (
-                <span style={{ color: '#00f0ff', fontSize: '0.62rem', marginLeft: '0.4rem', fontWeight: 500, letterSpacing: '0.05em' }}>
-                  (实时预览)
-                </span>
-              )}
-            </h3>
-            {activePart ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', height: '100%' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.8rem', fontWeight: 700, color: hoveredPartId ? '#00f0ff' : '#fff', transition: 'color 0.2s' }}>
-                    {activePart.name}
-                  </span>
-                  <span style={{ fontSize: '0.6rem', fontFamily: 'JetBrains Mono', background: 'rgba(80,180,255,0.12)', padding: '0.1rem 0.35rem', borderRadius: '4px', border: '1px solid rgba(80,180,255,0.2)' }}>
-                    {activePart.id}
-                  </span>
-                </div>
-                
-                <p style={{ margin: 0, fontSize: '0.68rem', color: '#94a3b8', lineHeight: 1.45 }}>
-                  {activePart.desc}
-                </p>
-                
-                <div style={{ height: '1px', background: 'rgba(80, 180, 255, 0.12)', margin: '0.2rem 0' }} />
-                
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.35rem 0.6rem', fontSize: '0.65rem', fontFamily: 'JetBrains Mono, monospace', color: '#cbd5e1' }}>
-                  <div>材料: <span style={{ color: '#fff' }}>{activePart.specs.material}</span></div>
-                  <div>重量: <span style={{ color: '#fff' }}>{activePart.specs.weight}</span></div>
-                  <div>状态: <span style={{ color: activePart.specs.status.includes('Active') || activePart.specs.status.includes('Running') || activePart.specs.status.includes('Healthy') || activePart.specs.status.includes('Online') || activePart.specs.status.includes('正常') || activePart.specs.status.includes('活动') || activePart.specs.status.includes('运行') || activePart.specs.status.includes('在线') ? '#10b981' : '#ffaa00' }}>
-                    {activePart.specs.status}
-                  </span></div>
-                  <div>温度: <span style={{ color: '#fff' }}>{activePart.specs.temp}</span></div>
-                  {activePart.specs.vibration && activePart.specs.vibration !== '---' && (
-                    <div style={{ gridColumn: 'span 2' }}>振动: <span style={{ color: '#fff' }}>{activePart.specs.vibration}</span></div>
-                  )}
-                  {activePart.specs.power && activePart.specs.power !== '---' && (
-                    <div style={{ gridColumn: 'span 2' }}>功率: <span style={{ color: '#fff' }}>{activePart.specs.power}</span></div>
-                  )}
-                  {activePart.specs.efficiency && activePart.specs.efficiency !== '---' && (
-                    <div style={{ gridColumn: 'span 2' }}>效率: <span style={{ color: '#fff' }}>{activePart.specs.efficiency}</span></div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>请选择或悬停零件以查看其全息遥测参数</span>
-            )}
-          </HudCard>
+                ) : (
+                  <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>请选择或悬停零件以查看其全息遥测参数</span>
+                )}
+              </HudCard>
+            </>
+          )}
         </Sidebar>
       </MainContent>
     </PageContainer>
