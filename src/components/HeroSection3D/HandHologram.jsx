@@ -12,6 +12,9 @@ const FINGER_CONNECTIONS = {
   palm: [5, 9, 13, 17, 0]
 };
 
+// Check if safe gesture test mode is enabled via URL search parameter
+const isSafeMode = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('safeGesture') === '1';
+
 function SingleHandHologram({ handLandmarks, isPinching, visible }) {
   const groupRef = useRef();
   const jointsRef = useRef([]);
@@ -66,6 +69,9 @@ function SingleHandHologram({ handLandmarks, isPinching, visible }) {
 
     // 1. Update joint positions and material colors in-place
     for (let i = 0; i < 21; i++) {
+      // In safe mode, we only track and update index fingertip (joint index 8)
+      if (isSafeMode && i !== 8) continue;
+
       const mesh = jointsRef.current[i];
       if (mesh) {
         mesh.position.copy(nextPoints[i]);
@@ -79,30 +85,32 @@ function SingleHandHologram({ handLandmarks, isPinching, visible }) {
       }
     }
 
-    // 2. Update line coordinates and colors in-place
-    Object.entries(FINGER_CONNECTIONS).forEach(([fingerName, indices]) => {
-      const line = linesRef.current[fingerName];
-      if (line) {
-        const posAttr = line.geometry.getAttribute('position');
-        const array = posAttr.array;
-        
-        indices.forEach((idx, i) => {
-          const pt = nextPoints[idx];
-          if (pt) {
-            array[i * 3] = pt.x;
-            array[i * 3 + 1] = pt.y;
-            array[i * 3 + 2] = pt.z;
+    // 2. Update line coordinates and colors in-place (Skip completely in safe mode)
+    if (!isSafeMode) {
+      Object.entries(FINGER_CONNECTIONS).forEach(([fingerName, indices]) => {
+        const line = linesRef.current[fingerName];
+        if (line) {
+          const posAttr = line.geometry.getAttribute('position');
+          const array = posAttr.array;
+          
+          indices.forEach((idx, i) => {
+            const pt = nextPoints[idx];
+            if (pt) {
+              array[i * 3] = pt.x;
+              array[i * 3 + 1] = pt.y;
+              array[i * 3 + 2] = pt.z;
+            }
+          });
+          
+          posAttr.needsUpdate = true;
+          
+          const lineColor = isPinching ? '#10b981' : '#00f0ff';
+          if (line.material) {
+            line.material.color.set(lineColor);
           }
-        });
-        
-        posAttr.needsUpdate = true;
-        
-        const lineColor = isPinching ? '#10b981' : '#00f0ff';
-        if (line.material) {
-          line.material.color.set(lineColor);
         }
-      }
-    });
+      });
+    }
   });
 
   // Reset smoothing state on visibility toggle
@@ -114,8 +122,8 @@ function SingleHandHologram({ handLandmarks, isPinching, visible }) {
 
   return (
     <group ref={groupRef} visible={false}>
-      {/* 1. Finger connection lines (rendered once, coordinates updated in useFrame) */}
-      {Object.keys(FINGER_CONNECTIONS).map((fingerName) => (
+      {/* 1. Finger connection lines (rendered once, coordinates updated in useFrame) - Skip in safe mode */}
+      {!isSafeMode && Object.keys(FINGER_CONNECTIONS).map((fingerName) => (
         <line key={fingerName} ref={(el) => { if (el) linesRef.current[fingerName] = el; }}>
           <bufferGeometry attach="geometry">
             <bufferAttribute
@@ -137,6 +145,9 @@ function SingleHandHologram({ handLandmarks, isPinching, visible }) {
 
       {/* 2. Joint points (rendered once, positions updated in useFrame) */}
       {Array.from({ length: 21 }).map((_, idx) => {
+        // In safe mode, skip rendering any joint points other than the index tip (index 8)
+        if (isSafeMode && idx !== 8) return null;
+
         const isTip = idx === 4 || idx === 8;
         const size = isTip ? 0.055 : 0.038;
 

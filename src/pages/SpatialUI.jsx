@@ -1,12 +1,159 @@
 import React, { useState, useRef, Suspense, useEffect, useCallback, useMemo } from 'react';
 import styled from 'styled-components';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Preload, OrbitControls, Line, Html, Clone, useGLTF, Grid, Environment, Sparkles } from '@react-three/drei';
 import { useNavigate } from 'react-router-dom';
 import * as THREE from 'three';
 import { useHandTracking, TRACKING_MODES } from '../utils/useHandTracking';
 import ErrorBoundary from '../components/ErrorBoundary';
 import HandHologram from '../components/HeroSection3D/HandHologram';
+
+// Check if safe gesture test mode is enabled via URL search parameter
+const isSafeMode = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('safeGesture') === '1';
+
+// WebGL crash logging blackbox helper
+function pushCrashLog(type, payload = {}) {
+  try {
+    const key = 'spatial_webgl_crash_logs';
+    const prev = JSON.parse(localStorage.getItem(key) || '[]');
+    const item = {
+      time: new Date().toISOString(),
+      type,
+      payload,
+    };
+    localStorage.setItem(key, JSON.stringify([...prev, item].slice(-80)));
+  } catch (e) {
+    console.error('Failed to write crash log:', e);
+  }
+}
+
+const DebugModalOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(8px);
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+`;
+
+const DebugModalContent = styled.div`
+  width: 100%;
+  max-width: 800px;
+  max-height: 80vh;
+  background: linear-gradient(135deg, #1e293b, #0f172a);
+  border: 1px solid rgba(231, 199, 126, 0.25);
+  border-radius: 12px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  color: #f1f5f9;
+  font-family: monospace;
+
+  .debug-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.2rem;
+    border-bottom: 1px solid rgba(231, 199, 126, 0.15);
+    
+    h2 {
+      font-size: 1.15rem;
+      margin: 0;
+      color: #e7c77e;
+    }
+    
+    .close-btn {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 1.8rem;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0;
+      &:hover { color: #f1f5f9; }
+    }
+  }
+
+  .debug-actions {
+    display: flex;
+    gap: 0.8rem;
+    padding: 0.8rem 1.2rem;
+    background: rgba(15, 23, 42, 0.4);
+    border-bottom: 1px solid rgba(231, 199, 126, 0.1);
+    
+    .btn-action {
+      background: rgba(231, 199, 126, 0.08);
+      border: 1px solid rgba(231, 199, 126, 0.25);
+      color: #e7c77e;
+      padding: 0.4rem 0.8rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      &:hover {
+        background: rgba(231, 199, 126, 0.15);
+        border-color: rgba(231, 199, 126, 0.4);
+      }
+      &.btn-secondary {
+        border-color: rgba(239, 68, 68, 0.4);
+        color: #f87171;
+        background: rgba(239, 68, 68, 0.05);
+        &:hover {
+          background: rgba(239, 68, 68, 0.12);
+          border-color: rgba(239, 68, 68, 0.6);
+        }
+      }
+    }
+  }
+
+  .debug-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    
+    .empty-log {
+      text-align: center;
+      color: #64748b;
+      padding: 3rem 0;
+    }
+    
+    .debug-item {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(148, 163, 184, 0.1);
+      border-radius: 6px;
+      padding: 0.8rem;
+      
+      .debug-time {
+        font-size: 0.75rem;
+        color: #64748b;
+      }
+      
+      .debug-type {
+        font-weight: bold;
+        color: #38bdf8;
+        margin: 0.2rem 0;
+      }
+      
+      .debug-payload {
+        margin: 0.4rem 0 0 0;
+        font-size: 0.75rem;
+        color: #cbd5e1;
+        white-space: pre-wrap;
+        word-break: break-all;
+        background: rgba(15, 23, 42, 0.8);
+        padding: 0.6rem;
+        border-radius: 4px;
+        border: 1px solid rgba(148, 163, 184, 0.05);
+      }
+    }
+  }
+`;
 
 const PageContainer = styled.div`
   min-height: 100vh;
@@ -1221,12 +1368,12 @@ function Battery({ explode }) {
 // Helper to map Turbine part IDs to their initial local coordinates in the GLB
 const getTurbinePartLocalPos = (id) => {
   switch (id) {
-    case '01': return [0, 1.25, 0.83];     // Blades
-    case '02': return [0, 1.17, -0.6];     // Main bearing seat box
-    case '03': return [0, 1.17, 0.15];     // Shaft system
-    case '04': return [0, 1.29, 0.38];     // Gearbox
-    case '05': return [0, 1.25, -0.2];     // Generator
-    case '06': return [0, 0.45, -0.45];    // Yaw gear ring
+    case '01': return [0, 1.25, 0.81];     // Blades
+    case '02': return [0, 1.20, 0.48];     // Yaw/Main shaft bearing
+    case '03': return [0, 1.20, 0.15];     // Gearbox
+    case '04': return [0, 1.20, -0.15];    // Generator
+    case '05': return [0, 0.45, -0.50];    // Yaw gear ring
+    case '06': return [0, 1.20, -0.85];    // Converter nacelle tail
     default: return [0, 0, 0];
   }
 };
@@ -1379,11 +1526,64 @@ function SpatialScene({
   const twoHandsFistTriggeredRef = useRef(false);
 
   const mappingCalculated = useRef(false);
+  const turbineMeshCentersRef = useRef({});
+
+  // Performance caches for THREE.Vector3 to prevent high-frequency GC allocations
+  const cacheVec3_targetCenter = useRef(new THREE.Vector3(0, 0, 0));
+  const cacheVec3_targetPos = useRef(new THREE.Vector3(0, 0, 0));
+  const cacheVec3_originZero = useRef(new THREE.Vector3(0, 0, 0));
+
+  const { gl } = useThree();
 
   useEffect(() => {
     mappingCalculated.current = false;
+    turbineMeshCentersRef.current = {};
     setPartMeshIndices({});
   }, [activeModel, setPartMeshIndices]);
+
+  // Bind WebGL context events for stability logging
+  useEffect(() => {
+    const canvas = gl.domElement;
+    if (!canvas) return;
+
+    const handleContextLost = (event) => {
+      event.preventDefault();
+      pushCrashLog('webglcontextlost', {
+        userAgent: navigator.userAgent,
+        dpr: window.devicePixelRatio,
+        width: canvas.width,
+        height: canvas.height,
+        activeModel,
+        selectedPartId,
+        isSafeMode,
+        rendererInfo: {
+          geometries: gl.info.memory.geometries,
+          textures: gl.info.memory.textures,
+          programs: gl.info.programs ? gl.info.programs.length : 0,
+          calls: gl.info.render.calls,
+          triangles: gl.info.render.triangles,
+        }
+      });
+      if (typeof window !== 'undefined') {
+        window.__webgl_context_lost__ = true;
+      }
+    };
+
+    const handleContextRestored = () => {
+      pushCrashLog('webglcontextrestored');
+      if (typeof window !== 'undefined') {
+        window.__webgl_context_lost__ = false;
+      }
+    };
+
+    canvas.addEventListener('webglcontextlost', handleContextLost, false);
+    canvas.addEventListener('webglcontextrestored', handleContextRestored, false);
+
+    return () => {
+      canvas.removeEventListener('webglcontextlost', handleContextLost);
+      canvas.removeEventListener('webglcontextrestored', handleContextRestored);
+    };
+  }, [gl, activeModel, selectedPartId]);
 
   const {
     cursor,
@@ -1410,11 +1610,13 @@ function SpatialScene({
       const children = turbineRef.current.children;
       if (children && children.length > 0) {
         const mapping = {};
+        const centers = {};
         Object.entries(customTurbineParts).forEach(([id, item]) => {
           let closestChildIndex = -1;
           let minDistance = Infinity;
           const [lx, ly, lz] = getTurbinePartLocalPos(id);
           const targetPos = new THREE.Vector3(lx, ly, lz);
+          const closestCenter = new THREE.Vector3();
 
           children.forEach((child, index) => {
             if (child.isMesh) {
@@ -1429,12 +1631,15 @@ function SpatialScene({
               if (dist < minDistance) {
                 minDistance = dist;
                 closestChildIndex = index;
+                closestCenter.copy(center);
               }
             }
           });
           mapping[id] = closestChildIndex;
+          centers[id] = [closestCenter.x, closestCenter.y, closestCenter.z];
         });
         setPartMeshIndices(mapping);
+        turbineMeshCentersRef.current = centers;
         mappingCalculated.current = true;
 
         // Populate mesh list for configuration panel
@@ -1488,7 +1693,7 @@ function SpatialScene({
 
     // Smoothly animate camera to presets
     if (cameraPreset) {
-      const targetPos = new THREE.Vector3(0, 0, 4.8);
+      const targetPos = cacheVec3_targetPos.current.set(0, 0, 4.8);
       switch (cameraPreset) {
         case 'home':
           targetPos.set(0, 0, 4.8);
@@ -1512,7 +1717,7 @@ function SpatialScene({
       camera.position.lerp(targetPos, 0.1);
       
       if (controls) {
-        controls.target.lerp(new THREE.Vector3(0, 0, 0), 0.1);
+        controls.target.lerp(cacheVec3_originZero.current.set(0, 0, 0), 0.1);
         controls.update();
       }
 
@@ -1523,7 +1728,7 @@ function SpatialScene({
 
     // Smoothly focus on selected part or whole model
     if (controls && !cameraPreset) {
-      let targetCenter = new THREE.Vector3(0, 0, 0);
+      const targetCenter = cacheVec3_targetCenter.current.set(0, 0, 0);
       if (focusMode && selectedPartId) {
         const item = partsData[selectedPartId];
         if (item) {
@@ -1657,22 +1862,22 @@ function SpatialScene({
       
       switch (id) {
         case '01': // Blades
-          localX = 0; localY = 1.25; localZ = 0.83;
+          localX = 0; localY = 1.25; localZ = 0.81;
           break;
-        case '02': // Main Bearing Box
-          localX = 0; localY = 1.17; localZ = -0.6;
+        case '02': // Yaw/Main shaft bearing
+          localX = 0; localY = 1.20; localZ = 0.48;
           break;
-        case '03': // Core Shaft
-          localX = 0; localY = 1.17; localZ = 0.15;
+        case '03': // Gearbox
+          localX = 0; localY = 1.20; localZ = 0.15;
           break;
-        case '04': // Gearbox
-          localX = 0; localY = 1.29; localZ = 0.38;
+        case '04': // Generator
+          localX = 0; localY = 1.20; localZ = -0.15;
           break;
-        case '05': // Generator
-          localX = 0; localY = 1.25; localZ = -0.2;
+        case '05': // Yaw Gear Ring
+          localX = 0; localY = 0.45; localZ = -0.50;
           break;
-        case '06': // Yaw Gear Ring
-          localX = 0; localY = 0.45; localZ = -0.45;
+        case '06': // Converter nacelle tail
+          localX = 0; localY = 1.20; localZ = -0.85;
           break;
         default:
           return pos;
@@ -1791,31 +1996,19 @@ function SpatialScene({
         </group>
 
         {/* Render respective tag nodes */}
-        {Object.entries(partsData).map(([id, item]) => {
+        {!isSafeMode && Object.entries(partsData).map(([id, item]) => {
           let explodedPos = getExplodedPosition(id, item.pos);
 
-          // For the wind turbine, bind the tag position directly to the corresponding child mesh coordinate
-          if (activeModel === 'turbine' && turbineRef.current) {
-            const childIdx = partMeshIndices[id];
-            if (childIdx !== undefined && childIdx !== -1) {
-              const child = turbineRef.current.children[childIdx];
-              if (child) {
-                // Compute geometry bounding box center dynamically
-                if (!child.geometry.boundingBox) {
-                  child.geometry.computeBoundingBox();
-                }
-                const center = new THREE.Vector3();
-                child.geometry.boundingBox.getCenter(center);
-                // Apply the child's local transformation matrix
-                center.applyMatrix4(child.matrix);
-
-                // Apply the scaling (1.2), position [0, -0.6, 0] and rotation [0, PI/2, 0] of the parent group
-                explodedPos = [
-                  center.z * 1.2,
-                  center.y * 1.2 - 0.6,
-                  -center.x * 1.2
-                ];
-              }
+          // For the wind turbine, bind the tag position directly to the corresponding pre-calculated child mesh coordinate
+          if (activeModel === 'turbine') {
+            const centerArr = turbineMeshCentersRef.current[id];
+            if (centerArr) {
+              // Apply the scaling (1.2), position [0, -0.6, 0] and rotation [0, PI/2, 0] of the parent group
+              explodedPos = [
+                centerArr[2] * 1.2,
+                centerArr[1] * 1.2 - 0.6,
+                -centerArr[0] * 1.2
+              ];
             }
           }
 
@@ -1838,7 +2031,7 @@ function SpatialScene({
         })}
 
         {/* Temporary tag node helper for Configurator mode */}
-        {configMode && selectedMeshIdx >= 0 && turbineRef.current && (
+        {!isSafeMode && configMode && selectedMeshIdx >= 0 && turbineRef.current && (
           (() => {
             const child = turbineRef.current.children[selectedMeshIdx];
             if (child && child.isMesh) {
@@ -2148,6 +2341,77 @@ export default function SpatialUI() {
     setWsUrl,
   } = useHandTracking();
 
+  const [showDebugLogs, setShowDebugLogs] = useState(false);
+  const [crashLogs, setCrashLogs] = useState([]);
+
+  // Retrieve logs from localStorage when debug window is opened
+  useEffect(() => {
+    if (showDebugLogs) {
+      try {
+        const key = 'spatial_webgl_crash_logs';
+        const logs = JSON.parse(localStorage.getItem(key) || '[]');
+        setCrashLogs(logs.reverse()); // Newest first
+      } catch (e) {
+        console.error('Failed to read crash logs:', e);
+      }
+    }
+  }, [showDebugLogs]);
+
+  // Wire up global error and unhandled promise rejection listeners
+  useEffect(() => {
+    const handleGlobalError = (event) => {
+      pushCrashLog('window-error', {
+        message: event.message,
+        filename: event.filename,
+        lineno: event.lineno,
+        colno: event.colno,
+        stack: event.error?.stack,
+      });
+    };
+
+    const handleUnhandledRejection = (event) => {
+      pushCrashLog('unhandled-rejection', {
+        reason: String(event.reason),
+        stack: event.reason?.stack,
+      });
+    };
+
+    window.addEventListener('error', handleGlobalError);
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+
+    return () => {
+      window.removeEventListener('error', handleGlobalError);
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    };
+  }, []);
+
+  const handleClearLogs = () => {
+    try {
+      localStorage.removeItem('spatial_webgl_crash_logs');
+      setCrashLogs([]);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleDownloadLogs = () => {
+    try {
+      const key = 'spatial_webgl_crash_logs';
+      const logs = localStorage.getItem(key) || '[]';
+      const blob = new Blob([logs], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `spatial_webgl_crash_logs_${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   // Reset selected part when switching models
   React.useEffect(() => {
     setSelectedPartId('01');
@@ -2214,6 +2478,9 @@ export default function SpatialUI() {
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+          <HeaderButton onClick={() => setShowDebugLogs(true)} style={{ borderColor: 'rgba(239, 68, 68, 0.45)', color: '#ef4444' }}>
+            🛠️ 崩溃黑匣子
+          </HeaderButton>
           <HeaderButton onClick={() => setCameraPreset('home')}>
             🔄 重置视角
           </HeaderButton>
@@ -2416,8 +2683,14 @@ export default function SpatialUI() {
           <ErrorBoundary>
             <Canvas
               camera={{ position: [0, 0, 4.8], fov: 48 }}
-              gl={{ alpha: true, antialias: true }}
-              dpr={[1, 2]}
+              gl={{
+                alpha: true,
+                antialias: !isSafeMode,
+                stencil: !isSafeMode,
+                preserveDrawingBuffer: false,
+                powerPreference: 'high-performance'
+              }}
+              dpr={isSafeMode ? 1 : [1, 1.25]}
               onCreated={({ gl }) => {
                 gl.outputColorSpace = THREE.SRGBColorSpace;
                 gl.toneMapping = THREE.ACESFilmicToneMapping;
@@ -2986,6 +3259,38 @@ export default function SpatialUI() {
           )}
         </Sidebar>
       </MainContent>
+
+      {showDebugLogs && (
+        <DebugModalOverlay onClick={() => setShowDebugLogs(false)}>
+          <DebugModalContent onClick={(e) => e.stopPropagation()}>
+            <div className="debug-header">
+              <h2>🛠️ WebGL 崩溃黑匣子日志 (最近80条)</h2>
+              <button className="close-btn" onClick={() => setShowDebugLogs(false)}>×</button>
+            </div>
+            <div className="debug-actions">
+              <button className="btn-action" onClick={handleDownloadLogs}>下载 JSON</button>
+              <button className="btn-action btn-secondary" onClick={handleClearLogs}>清空日志</button>
+            </div>
+            <div className="debug-list">
+              {crashLogs.length === 0 ? (
+                <div className="empty-log">暂无崩溃日志记录</div>
+              ) : (
+                crashLogs.map((log, i) => (
+                  <div className="debug-item" key={i}>
+                    <div className="debug-time">{new Date(log.time).toLocaleString()}</div>
+                    <div className="debug-type" style={{ color: log.type === 'webglcontextlost' || log.type === 'window-error' ? '#ef4444' : '#38bdf8' }}>
+                      [{log.type.toUpperCase()}]
+                    </div>
+                    <pre className="debug-payload">
+                      {JSON.stringify(log.payload, null, 2)}
+                    </pre>
+                  </div>
+                ))
+              )}
+            </div>
+          </DebugModalContent>
+        </DebugModalOverlay>
+      )}
     </PageContainer>
   );
 }
