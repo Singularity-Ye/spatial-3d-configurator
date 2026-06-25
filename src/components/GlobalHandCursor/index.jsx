@@ -226,18 +226,16 @@ export default function GlobalHandCursor() {
 
   return (
     <>
-      {/* 1. Global full-screen 3D hand skeleton canvas */}
-      {handDetected && (
-        <GlobalCanvasContainer>
-          <Canvas
-            camera={{ position: [0, 0.05, 5.9], fov: 48 }}
-            gl={{ alpha: true, antialias: true }}
-            style={{ pointerEvents: 'none' }}
-          >
-            <HandHologram />
-          </Canvas>
-        </GlobalCanvasContainer>
-      )}
+      {/* 1. Global full-screen 3D hand skeleton canvas (Keep mounted to prevent WebGL Context lost from hand detection flicker) */}
+      <GlobalCanvasContainer style={{ display: handDetected ? 'block' : 'none' }}>
+        <Canvas
+          camera={{ position: [0, 0.05, 5.9], fov: 48 }}
+          gl={{ alpha: true, antialias: true }}
+          style={{ pointerEvents: 'none' }}
+        >
+          <HandHologram />
+        </Canvas>
+      </GlobalCanvasContainer>
 
       {/* 2. Global floating pointer cursor */}
       {handDetected && (
