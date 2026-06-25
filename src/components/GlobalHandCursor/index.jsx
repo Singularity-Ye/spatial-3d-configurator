@@ -14,8 +14,6 @@ const GlobalCanvasContainer = styled.div`
 
 const FloatingCursor = styled.div`
   position: fixed;
-  left: ${props => props.$left};
-  top: ${props => props.$top};
   width: 24px;
   height: 24px;
   margin-left: -12px;
@@ -240,8 +238,7 @@ export default function GlobalHandCursor() {
       {/* 2. Global floating pointer cursor */}
       {handDetected && (
         <FloatingCursor
-          $left={cursorLeft}
-          $top={cursorTop}
+          style={{ left: cursorLeft, top: cursorTop }}
           $isPinching={isPinching}
         />
       )}
