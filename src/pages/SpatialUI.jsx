@@ -2768,7 +2768,7 @@ export default function SpatialUI() {
                 </div>
               </HudCard>
 
-              <HudCard style={{ flex: 1 }}>
+              <HudCard>
                 <h3>
                   组件数据详情
                   {hoveredPartId && (
@@ -2778,7 +2778,7 @@ export default function SpatialUI() {
                   )}
                 </h3>
                 {activePart ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', height: '100%' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontSize: '0.8rem', fontWeight: 700, color: hoveredPartId ? '#2563eb' : '#0f172a', transition: 'color 0.2s' }}>
                         {activePart.name}
