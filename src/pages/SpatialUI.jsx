@@ -1396,9 +1396,11 @@ const getTurbinePartLocalPos = (id) => {
   }
 };
 
-// Procedural high-fidelity Wind Turbine Model loaded from GLB
 function Turbine({ explode, turbineRef, configMode, selectedMeshIdx, hoveredMeshIdx }) {
-  const { scene } = useGLTF("/model/glb/turbine.glb");
+  const modelUrl = import.meta.env.DEV
+    ? "/model/glb/turbine.glb"
+    : "https://cdn.jsdelivr.net/gh/Singularity-Ye/spatial-3d-configurator@main/public/model/glb/turbine.glb";
+  const { scene } = useGLTF(modelUrl);
 
   // Create a single stable clone of the GLB scene to prevent geometries recreation on every render
   const clonedScene = useMemo(() => {
