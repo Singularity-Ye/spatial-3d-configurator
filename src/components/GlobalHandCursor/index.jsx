@@ -62,9 +62,67 @@ const CameraPiP = styled.div`
     pointer-events: none;
     transform: scaleX(-1); /* Mirror skeleton overlay to match mirrored video */
   }
+
+  &:hover button.collapse-btn {
+    opacity: 1;
+  }
 `;
 
+const CollapseBtn = styled.button`
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 20px;
+  height: 20px;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(231, 199, 126, 0.4);
+  color: #e7c77e;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  z-index: 10002;
+  opacity: 0;
+  transition: all 0.2s ease;
+  padding: 0;
+  line-height: 1;
 
+  &:hover {
+    background: rgba(231, 199, 126, 0.3);
+    border-color: #e7c77e;
+    transform: scale(1.08);
+  }
+`;
+
+const CameraRestoreBtn = styled.button`
+  position: fixed;
+  bottom: 1.5rem;
+  left: 1.5rem;
+  z-index: 10000;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(231, 199, 126, 0.4);
+  background: rgba(14, 24, 20, 0.92);
+  color: #e7c77e;
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.5),
+    0 0 12px rgba(231, 199, 126, 0.2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: rgba(231, 199, 126, 0.25);
+    border-color: #e7c77e;
+    transform: scale(1.08);
+  }
+`;
 
 export default function GlobalHandCursor() {
   const {
@@ -78,10 +136,13 @@ export default function GlobalHandCursor() {
     canvasRef
   } = useHandTracking();
 
+  const [showCamera, setShowCamera] = useState(true);
+
   const lastElementRef = useRef(null);
   const wasPinchingRef = useRef(false);
   const pinchStartRef = useRef({ x: 0, y: 0, time: 0 });
   const lastClientRef = useRef({ x: 0, y: 0 });
+
 
   // Helper to dispatch synthetic events with pageX, pageY, offsetX, and offsetY injected
   const dispatchSyntheticEvent = (el, type, cX, cY, isPointer = true) => {
@@ -210,6 +271,8 @@ export default function GlobalHandCursor() {
   const cursorLeft = `${(cursor.x + 1) * 50}%`;
   const cursorTop = `${(1 - cursor.y) * 50}%`;
 
+  const isCameraMode = trackingMode === TRACKING_MODES.CAMERA && cameraActive;
+
   if (trackingMode === TRACKING_MODES.MOUSE) return null;
 
   return (
@@ -223,10 +286,21 @@ export default function GlobalHandCursor() {
       )}
 
       {/* 3. Global Camera PIP Window */}
-      <CameraPiP $visible={trackingMode === TRACKING_MODES.CAMERA && cameraActive}>
+      <CameraPiP $visible={isCameraMode && showCamera}>
+        <CollapseBtn className="collapse-btn" onClick={() => setShowCamera(false)}>
+          ✕
+        </CollapseBtn>
         <video ref={videoRef} autoPlay playsInline muted />
         <canvas ref={canvasRef} width="640" height="480" />
       </CameraPiP>
+
+      {/* 4. Restore Floating Camera Button */}
+      {isCameraMode && !showCamera && (
+        <CameraRestoreBtn onClick={() => setShowCamera(true)} title="显示摄像头画面">
+          📹
+        </CameraRestoreBtn>
+      )}
     </>
   );
 }
+

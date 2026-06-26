@@ -44,46 +44,55 @@ function SingleHandHologram({ handLandmarks, isPinching, visible }) {
     };
   }, [lineGeometries]);
 
-  // Map raw landmarks to target THREE.Vector3 coordinates in the 3D space
-  const targets = useMemo(() => {
-    if (!visible || !handLandmarks || handLandmarks.length < 21) return [];
-
-    const scaleX = 3.6;
-    const scaleY = 2.6;
-    const scaleZ = 4.0;
-
-    const list = [];
-    for (let i = 0; i < 21; i++) {
-      const lm = handLandmarks[i];
-      if (!lm || isNaN(lm.x) || isNaN(lm.y) || isNaN(lm.z)) {
-        return [];
-      }
-      const x = (1 - lm.x * 2) * scaleX;
-      const y = (1 - lm.y * 2) * scaleY;
-      const z = -lm.z * scaleZ + 1.2; // Push forward slightly in front of center
-      list.push(new THREE.Vector3(x, y, z));
-    }
-    return list;
-  }, [handLandmarks, visible]);
-
   // Interpolate joint positions smoothly using LERP and update geometries/meshes directly
   useFrame((state, delta) => {
     const group = groupRef.current;
     if (!group) return;
 
-    if (!visible || targets.length < 21) {
+    if (!visible || !handLandmarks || handLandmarks.length < 21) {
       group.visible = false;
       return;
     }
 
     group.visible = true;
 
+    // Lock the group to the camera position and rotation to keep it screen-aligned
+    const { camera, size } = state;
+    group.position.copy(camera.position);
+    group.quaternion.copy(camera.quaternion);
+
+    // Place the hand skeleton at a fixed depth of 3.0 units in front of the camera
+    const depth = 3.0;
+    const tempDir = new THREE.Vector3(0, 0, -depth);
+    tempDir.applyQuaternion(camera.quaternion);
+    group.position.add(tempDir);
+
+    // Calculate targets in camera local space
+    const aspect = size.width / size.height;
+    const localTargets = [];
+    const tanFovHalf = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+    for (let i = 0; i < 21; i++) {
+      const lm = handLandmarks[i];
+      if (!lm || isNaN(lm.x) || isNaN(lm.y) || isNaN(lm.z)) {
+        group.visible = false;
+        return;
+      }
+      const z = -lm.z * 1.5; // Scale the z coordinate slightly to show depth
+      const jointDepth = depth - z; // Actual depth of this joint from camera
+      const halfHeightJoint = jointDepth * tanFovHalf;
+      const halfWidthJoint = halfHeightJoint * aspect;
+
+      const x = (1 - lm.x * 2) * halfWidthJoint;
+      const y = (1 - lm.y * 2) * halfHeightJoint;
+      localTargets.push(new THREE.Vector3(x, y, z));
+    }
+
     if (smoothedRef.current.length === 0) {
-      smoothedRef.current = targets.map(t => t.clone());
+      smoothedRef.current = localTargets.map(t => t.clone());
     } else {
       const factor = 1 - Math.exp(-22 * Math.min(delta, 0.1));
       smoothedRef.current = smoothedRef.current.map((pt, idx) => {
-        const target = targets[idx];
+        const target = localTargets[idx];
         return target ? pt.clone().lerp(target, factor) : pt;
       });
     }
