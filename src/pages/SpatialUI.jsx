@@ -1397,7 +1397,9 @@ const getTurbinePartLocalPos = (id) => {
 };
 
 function Turbine({ explode, turbineRef, configMode, selectedMeshIdx, hoveredMeshIdx }) {
-  const modelUrl = "/model/glb/turbine.glb";
+  const modelUrl = import.meta.env.DEV
+    ? "/model/glb/turbine.glb"
+    : "https://raw.githubusercontent.com/Singularity-Ye/spatial-3d-configurator/main/public/model/glb/turbine.glb";
   const { scene } = useGLTF(modelUrl);
 
   // Create a single stable clone of the GLB scene to prevent geometries recreation on every render
