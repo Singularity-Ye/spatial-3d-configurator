@@ -26,6 +26,34 @@ const loadScript = (src) => {
   });
 };
 
+const isIriunCamera = (device) => /iriun/i.test(device?.label || '');
+
+const getPreferredLocalCameraStream = async (videoConstraints) => {
+  let devices = [];
+
+  try {
+    devices = await navigator.mediaDevices.enumerateDevices();
+    if (!devices.some((device) => device.kind === 'videoinput' && device.label)) {
+      const probe = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      probe.getTracks().forEach((track) => track.stop());
+      devices = await navigator.mediaDevices.enumerateDevices();
+    }
+  } catch (error) {
+    console.warn('Unable to enumerate camera devices; falling back to browser default.', error);
+  }
+
+  const localCamera = devices
+    .filter((device) => device.kind === 'videoinput')
+    .find((device) => !isIriunCamera(device));
+
+  return navigator.mediaDevices.getUserMedia({
+    video: localCamera
+      ? { ...videoConstraints, deviceId: { exact: localCamera.deviceId } }
+      : videoConstraints,
+    audio: false,
+  });
+};
+
 // Distance helper
 const getDistance = (p1, p2) => {
   const dx = p1.x - p2.x;
@@ -495,14 +523,13 @@ export function HandTrackingProvider({ children }) {
         return;
       }
 
-      // 2. Get Camera stream (request ideal 60 FPS from hardware webcam)
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { 
-          width: 640, 
-          height: 480, 
-          facingMode: 'user',
-          frameRate: { ideal: 60, min: 30 }
-        },
+      // 2. Get local hardware camera stream. Iriun is a virtual camera and can
+      // become the browser default, so avoid it for this demo page.
+      const stream = await getPreferredLocalCameraStream({
+        width: 640,
+        height: 480,
+        facingMode: 'user',
+        frameRate: { ideal: 60, min: 30 }
       });
 
       // Check if a newer initialization has started since we started waiting for getUserMedia
@@ -515,9 +542,10 @@ export function HandTrackingProvider({ children }) {
       videoRefInternal.current.srcObject = stream;
       setCameraActive(true);
 
+      await videoRefInternal.current.play();
+
       // 3. Load CDN scripts
       await loadScript(MEDIAPIPE_HANDS_CDN);
-      await loadScript(MEDIAPIPE_CAMERA_CDN);
 
       if (myId !== activeInitIdRef.current) {
         console.log('A newer camera tracking initialization started. Aborting CDN loading.');
@@ -544,31 +572,34 @@ export function HandTrackingProvider({ children }) {
         return;
       }
 
-      // 5. Initialize MediaPipe Camera Loop
-      if (videoRefInternal.current && mediaPipeHandsRef.current && window.Camera) {
+      // 5. Process the selected stream directly. Avoid MediaPipe Camera helper,
+      // which opens a fresh browser-default stream and may pick Iriun again.
+      if (videoRefInternal.current && mediaPipeHandsRef.current) {
         lastProcessedTimeRef.current = 0;
-        const cameraObj = new window.Camera(videoRefInternal.current, {
-          onFrame: async () => {
-            if (activeModeRef.current !== TRACKING_MODES.CAMERA || !mediaPipeHandsRef.current) return;
-            
-            // Throttle to 60 FPS (16ms) to prevent excessive GPU overload
-            const now = Date.now();
-            if (now - lastProcessedTimeRef.current < 16) {
-              return;
-            }
-            lastProcessedTimeRef.current = now;
+        let frameId = 0;
+        const processFrame = async () => {
+          if (myId !== activeInitIdRef.current || activeModeRef.current !== TRACKING_MODES.CAMERA || !mediaPipeHandsRef.current) {
+            return;
+          }
 
-            // Only process frames if the video element is still active/mounted
-            if (videoRefInternal.current) {
-              await mediaPipeHandsRef.current.send({ image: videoRefInternal.current });
+          const now = Date.now();
+          if (now - lastProcessedTimeRef.current >= 16 && videoRefInternal.current?.readyState >= 2) {
+            lastProcessedTimeRef.current = now;
+            await mediaPipeHandsRef.current.send({ image: videoRefInternal.current });
+          }
+
+          frameId = requestAnimationFrame(processFrame);
+        };
+
+        mediaPipeCameraRef.current = {
+          stop: () => {
+            if (frameId) {
+              cancelAnimationFrame(frameId);
+              frameId = 0;
             }
           },
-          width: 640,
-          height: 480,
-          fps: 60 // Request 60 FPS from the webcam stream
-        });
-        mediaPipeCameraRef.current = cameraObj;
-        cameraObj.start();
+        };
+        frameId = requestAnimationFrame(processFrame);
       }
     } catch (err) {
       console.error('Failed to start webcam hand tracking:', err);
