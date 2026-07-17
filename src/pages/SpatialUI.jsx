@@ -700,270 +700,6 @@ const HeaderButton = styled.button`
   }
 `;
 
-// Refrigerator parts metadata
-const FRIDGE_PARTS = {
-  '01': {
-    id: 'RF-FC-001',
-    name: '冷藏保鲜层',
-    title: '01 冷藏保鲜层',
-    desc: '双路微冷循环风道技术，智能控温保鲜，温度区间：2℃至8℃。',
-    specs: {
-      material: '食品级 ABS / 钢化玻璃',
-      weight: '18.5 kg',
-      status: '正常',
-      temp: '4.0 ℃',
-      vibration: '0.1 mm/s',
-      power: '---',
-      efficiency: '92.0%'
-    },
-    pos: [0, 0.65, 0.35]
-  },
-  '02': {
-    id: 'RF-FZ-002',
-    name: '极速冷冻层',
-    title: '02 极速冷冻层',
-    desc: '超导一体风冷无霜蒸发器，最低制冷温度可达 -24℃。',
-    specs: {
-      material: '发泡聚氨酯 / 铝板',
-      weight: '24.2 kg',
-      status: '活动',
-      temp: '-18.0 ℃',
-      vibration: '0.2 mm/s',
-      power: '---',
-      efficiency: '95.0%'
-    },
-    pos: [0, -0.45, 0.35]
-  },
-  '03': {
-    id: 'RF-CP-003',
-    name: '变频压缩机',
-    title: '03 变频压缩机',
-    desc: '双转子直流变频静音压缩机，能耗比极佳，全天候噪音低于32dB。',
-    specs: {
-      material: '铸钢 / 铜绕组',
-      weight: '12.0 kg',
-      status: '正常',
-      temp: '45.2 ℃',
-      vibration: '0.8 mm/s',
-      power: '120 W',
-      efficiency: '96.5%'
-    },
-    pos: [0, -0.85, -0.45]
-  },
-  '04': {
-    id: 'RF-SP-004',
-    name: '智能控制板',
-    title: '04 智能控制板',
-    desc: '透光晶体玻璃晶格触屏，集成智能物联控制芯片。',
-    specs: {
-      material: '微处理器 / LCD 面板',
-      weight: '0.85 kg',
-      status: '在线',
-      temp: '28.1 ℃',
-      vibration: '0.0 mm/s',
-      power: '12 W',
-      efficiency: '98.0%'
-    },
-    pos: [0.55, 0.4, 0.45]
-  },
-  '05': {
-    id: 'RF-FN-005',
-    name: '双循环风扇',
-    title: '05 双循环风扇',
-    desc: '冷藏与冷冻舱独立无刷直流空气循环风扇，提供高效强制冷气对流。',
-    specs: {
-      material: '强化工程塑料',
-      weight: '0.45 kg',
-      status: '正常',
-      temp: '-2.0 ℃',
-      vibration: '0.1 mm/s',
-      power: '8 W',
-      efficiency: '94.0%'
-    },
-    pos: [0, 0.85, 0.2]
-  },
-  '06': {
-    id: 'RF-MT-006',
-    name: '宽频变温舱',
-    title: '06 宽频变温舱',
-    desc: '支持 -20℃ 至 5℃ 宽幅温度精准调节的独立抽屉，满足不同食材保鲜需求。',
-    specs: {
-      material: '食品级高透 PP',
-      weight: '4.2 kg',
-      status: '正常',
-      temp: '0.0 ℃',
-      vibration: '---',
-      power: '---',
-      efficiency: '95.0%'
-    },
-    pos: [0, 0.15, 0.35]
-  },
-  '07': {
-    id: 'RF-DD-007',
-    name: '除菌净味模块',
-    title: '07 除菌净味模块',
-    desc: '主动式高浓度负氧离子群除菌系统，强力祛除异味并有效降解农残。',
-    specs: {
-      material: '纳米触媒催化剂',
-      weight: '0.3 kg',
-      status: '在线',
-      temp: '8.0 ℃',
-      vibration: '---',
-      power: '4 W',
-      efficiency: '99.0%'
-    },
-    pos: [0.35, 0.55, 0.1]
-  },
-  '08': {
-    id: 'RF-CD-008',
-    name: '冷凝器排热板',
-    title: '08 冷凝器排热板',
-    desc: '隐藏式金属背板冷凝热交换器，将压缩机排出的高压热量均匀散发。',
-    specs: {
-      material: '高导热铝制板管',
-      weight: '8.5 kg',
-      status: '运行',
-      temp: '38.2 ℃',
-      vibration: '0.2 mm/s',
-      power: '---',
-      efficiency: '93.5%'
-    },
-    pos: [0, 0, -0.38]
-  }
-};
-
-// Battery parts metadata
-const BATTERY_PARTS = {
-  '01': {
-    id: 'BT-AT-001',
-    name: '正极端子',
-    title: '01 正极汇流端子',
-    desc: '阳极集流体采用高导电防氧化铜合金镀金，接触内阻极低。',
-    specs: {
-      material: '铜合金镀金',
-      weight: '0.12 kg',
-      status: '正常',
-      temp: '32.5 ℃',
-      vibration: '0.0 mm/s',
-      power: '---',
-      efficiency: '99.8%'
-    },
-    pos: [0, 1.15, 0]
-  },
-  '02': {
-    id: 'BT-CT-002',
-    name: '负极端子',
-    title: '02 负极连接端子',
-    desc: '阴极集流体外层使用高纯度镍片复合冲压压铸而成，散热性极佳。',
-    specs: {
-      material: '高纯度复合镍板',
-      weight: '0.15 kg',
-      status: '正常',
-      temp: '31.8 ℃',
-      vibration: '0.0 mm/s',
-      power: '---',
-      efficiency: '99.6%'
-    },
-    pos: [0, -1.15, 0]
-  },
-  '03': {
-    id: 'BT-MS-003',
-    name: '纳米多孔隔膜',
-    title: '03 纳米多孔隔膜',
-    desc: '12μm 多孔聚乙烯安全隔离层，熔融自闭安全防护温度达130℃。',
-    specs: {
-      material: '多孔聚乙烯安全膜',
-      weight: '0.05 kg',
-      status: '绝缘',
-      temp: '29.5 ℃',
-      vibration: '0.0 mm/s',
-      power: '---',
-      efficiency: '99.9%'
-    },
-    pos: [0, 0, 0.15]
-  },
-  '04': {
-    id: 'BT-SE-004',
-    name: '固态电解质',
-    title: '04 固态电解质',
-    desc: '新型固态锂聚合物电解质凝胶，大幅抑制锂枝晶生长，消除漏液风险。',
-    specs: {
-      material: '锂聚合物凝胶',
-      weight: '1.45 kg',
-      status: '正常',
-      temp: '34.2 ℃',
-      vibration: '0.0 mm/s',
-      power: '---',
-      efficiency: '97.2%'
-    },
-    pos: [0.35, 0, -0.2]
-  },
-  '05': {
-    id: 'BT-IC-005',
-    name: '绝缘防爆壳',
-    title: '05 绝缘防爆密封壳',
-    desc: '高强度复合树脂防爆外壳，提供高级电气绝缘、抗机械挤压及防水防尘。',
-    specs: {
-      material: '高强度阻燃 ABS/PC',
-      weight: '3.5 kg',
-      status: '正常',
-      temp: '25.5 ℃',
-      vibration: '---',
-      power: '---',
-      efficiency: '99.9%'
-    },
-    pos: [0.45, 0, 0.25]
-  },
-  '06': {
-    id: 'BT-TH-006',
-    name: '测温线束',
-    title: '06 温度检测线束',
-    desc: '高集成式多点 NTC 热敏电阻传感器排线，精确捕获内部电芯温度异动。',
-    specs: {
-      material: '镀锡扁平铜线 / FEP',
-      weight: '0.18 kg',
-      status: '在线',
-      temp: '30.2 ℃',
-      vibration: '---',
-      power: '---',
-      efficiency: '99.5%'
-    },
-    pos: [0, 0.6, 0.15]
-  },
-  '07': {
-    id: 'BT-PR-007',
-    name: '泄压爆破阀',
-    title: '07 泄压爆破安全阀',
-    desc: '高灵敏度单向机械爆破片，在电芯内压异常升高时主动开启定向排气泄压。',
-    specs: {
-      material: '防爆铝合金薄膜',
-      weight: '0.02 kg',
-      status: '正常',
-      temp: '28.0 ℃',
-      vibration: '---',
-      power: '---',
-      efficiency: '100%'
-    },
-    pos: [0, 1.1, 0.3]
-  },
-  '08': {
-    id: 'BT-BM-008',
-    name: 'BMS控制器',
-    title: '08 电池管理系统 (BMS)',
-    desc: '搭载专有SOC估算算法，监控单体过充过放，并控制主动式电荷均衡。',
-    specs: {
-      material: '双核 MCU 核心板',
-      weight: '0.15 kg',
-      status: '在线',
-      temp: '35.4 ℃',
-      vibration: '---',
-      power: '5 W',
-      efficiency: '98.5%'
-    },
-    pos: [0.2, 1.05, 0.1]
-  }
-};
-
 // Turbine parts metadata
 const TURBINE_PARTS = {
   '01': {
@@ -1184,204 +920,6 @@ const MemoizedTagNode = React.memo(TagNode, (prevProps, nextProps) => {
     prevProps.position[2] === nextProps.position[2]
   );
 });
-
-// Procedural Refrigerator Model
-function Refrigerator({ explode }) {
-  const ref = useRef();
-  
-  // Exploded translations mapping
-  const doorRotateY = explode * (Math.PI * 0.65); // Open doors up to 120deg
-  const drawerZ = explode * 0.72; // Slide drawers forward
-  const shelfZ = explode * 0.42; // Slide shelf forward
-  const backPanelY = -explode * 0.35; // Back panels push back/down
-
-  return (
-    <group ref={ref}>
-      {/* 1. Main Cabinet Shell (Translucent clean glass structure) */}
-      <mesh position={[0, 0, 0]}>
-        <boxGeometry args={[1.0, 2.0, 0.8]} />
-        <meshPhysicalMaterial
-          color="#ffffff"
-          roughness={0.1}
-          metalness={0.1}
-          transmission={0.9}
-          ior={1.5}
-          thickness={0.5}
-          transparent
-          opacity={0.3}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-
-      {/* Wireframe border outlining the cabinet shell */}
-      <mesh position={[0, 0, 0]}>
-        <boxGeometry args={[1.0, 2.0, 0.8]} />
-        <meshBasicMaterial color="#94a3b8" wireframe transparent opacity={0.15} />
-      </mesh>
-
-      {/* 2. Divider Panel (Center Shelf) */}
-      <mesh position={[0, 0.1, 0]}>
-        <boxGeometry args={[0.96, 0.03, 0.72]} />
-        <meshBasicMaterial color="#cbd5e1" transparent opacity={0.25} />
-      </mesh>
-
-      {/* 3. Sliding Upper Food Shelf */}
-      <group position={[0, 0.5, shelfZ]}>
-        <mesh>
-          <boxGeometry args={[0.92, 0.02, 0.68]} />
-          <meshPhysicalMaterial color="#ffffff" transmission={0.9} transparent opacity={0.4} />
-        </mesh>
-        <mesh>
-          <boxGeometry args={[0.92, 0.02, 0.68]} />
-          <meshBasicMaterial color="#cbd5e1" wireframe transparent opacity={0.12} />
-        </mesh>
-      </group>
-
-      {/* 4. Sliding Freezer Drawer */}
-      <group position={[0, -0.45, drawerZ]}>
-        <mesh>
-          <boxGeometry args={[0.88, 0.35, 0.65]} />
-          <meshPhysicalMaterial color="#93c5fd" transmission={0.8} transparent opacity={0.12} />
-        </mesh>
-        <mesh>
-          <boxGeometry args={[0.88, 0.35, 0.65]} />
-          <meshBasicMaterial color="#2563eb" wireframe transparent opacity={0.15} />
-        </mesh>
-      </group>
-
-      {/* 5. Rotary Doors (Upper Door hinges on the right, Lower Door on left) */}
-      <group position={[0.5, 0.55, 0.4]}>
-        <group rotation={[0, -doorRotateY, 0]} position={[-0.5, 0, 0]}>
-          <mesh position={[0.5, 0, 0.02]}>
-            <boxGeometry args={[0.96, 0.9, 0.05]} />
-            <meshPhysicalMaterial color="#ffffff" transmission={0.8} transparent opacity={0.25} />
-          </mesh>
-          <mesh position={[0.5, 0, 0.02]}>
-            <boxGeometry args={[0.96, 0.9, 0.05]} />
-            <meshBasicMaterial color="#e2e8f0" wireframe transparent opacity={0.15} />
-          </mesh>
-        </group>
-      </group>
-
-      {/* 6. Compressor (Cylinder component at the back bottom) */}
-      <group position={[0, -0.85, backPanelY - 0.28]}>
-        <mesh rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.18, 0.18, 0.32, 16]} />
-          <meshBasicMaterial color="#475569" transparent opacity={0.4} />
-        </mesh>
-        <mesh rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.18, 0.18, 0.32, 16]} />
-          <meshBasicMaterial color="#cbd5e1" wireframe transparent opacity={0.2} />
-        </mesh>
-      </group>
-    </group>
-  );
-}
-
-const MemoizedRefrigerator = React.memo(Refrigerator);
-
-// Procedural Battery Model
-function Battery({ explode }) {
-  const ref = useRef();
-
-  // Exploded translations mapping
-  const caseX = explode * 0.76;       // Shell splits in half along X-axis
-  const cathodeY = -explode * 0.5;   // Cathode shifts down
-  const anodeY = explode * 0.5;       // Anode shifts up
-  const coreZ = explode * 0.4;        // Internal layers separate slightly along Z
-
-  return (
-    <group ref={ref}>
-      {/* 1. Translucent Outer Casing (Left Half) */}
-      <group position={[-caseX, 0, 0]}>
-        <mesh>
-          <cylinderGeometry args={[0.5, 0.5, 1.8, 16, 2, true, 0, Math.PI]} />
-          <meshPhysicalMaterial
-            color="#e2e8f0"
-            roughness={0.08}
-            transmission={0.9}
-            transparent
-            opacity={0.25}
-            side={THREE.DoubleSide}
-          />
-        </mesh>
-        <mesh>
-          <cylinderGeometry args={[0.5, 0.5, 1.8, 16, 2, true, 0, Math.PI]} />
-          <meshBasicMaterial color="#cbd5e1" wireframe transparent opacity={0.15} side={THREE.DoubleSide} />
-        </mesh>
-      </group>
-
-      {/* Translucent Outer Casing (Right Half) */}
-      <group position={[caseX, 0, 0]}>
-        <mesh>
-          <cylinderGeometry args={[0.5, 0.5, 1.8, 16, 2, true, Math.PI, Math.PI]} />
-          <meshPhysicalMaterial
-            color="#e2e8f0"
-            roughness={0.08}
-            transmission={0.9}
-            transparent
-            opacity={0.25}
-            side={THREE.DoubleSide}
-          />
-        </mesh>
-        <mesh>
-          <cylinderGeometry args={[0.5, 0.5, 1.8, 16, 2, true, Math.PI, Math.PI]} />
-          <meshBasicMaterial color="#cbd5e1" wireframe transparent opacity={0.15} side={THREE.DoubleSide} />
-        </mesh>
-      </group>
-
-      {/* 2. Active Cathode Terminal (-) */}
-      <group position={[0, cathodeY - 0.96, 0]}>
-        <mesh>
-          <cylinderGeometry args={[0.26, 0.26, 0.12, 16]} />
-          <meshBasicMaterial color="#2563eb" transparent opacity={0.5} />
-        </mesh>
-        <mesh>
-          <cylinderGeometry args={[0.26, 0.26, 0.12, 16]} />
-          <meshBasicMaterial color="#93c5fd" wireframe transparent opacity={0.2} />
-        </mesh>
-      </group>
-
-      {/* 3. Active Anode Terminal (+) */}
-      <group position={[0, anodeY + 0.96, 0]}>
-        <mesh>
-          <cylinderGeometry args={[0.18, 0.18, 0.12, 16]} />
-          <meshBasicMaterial color="#dc2626" transparent opacity={0.5} />
-        </mesh>
-        <mesh>
-          <cylinderGeometry args={[0.18, 0.18, 0.12, 16]} />
-          <meshBasicMaterial color="#fca5a5" wireframe transparent opacity={0.2} />
-        </mesh>
-      </group>
-
-      {/* 4. Internal Separator Matrix Layer */}
-      <group position={[0, 0, coreZ]}>
-        <mesh>
-          <cylinderGeometry args={[0.42, 0.42, 1.5, 16]} />
-          <meshPhysicalMaterial color="#ffffff" transmission={0.9} transparent opacity={0.22} />
-        </mesh>
-        <mesh>
-          <cylinderGeometry args={[0.42, 0.42, 1.5, 16]} />
-          <meshBasicMaterial color="#cbd5e1" wireframe transparent opacity={0.12} />
-        </mesh>
-      </group>
-
-      {/* 5. Electrolyte Colloidal Matrix */}
-      <group position={[0, 0, -coreZ]}>
-        <mesh>
-          <cylinderGeometry args={[0.35, 0.35, 1.35, 12]} />
-          <meshBasicMaterial color="#93c5fd" transparent opacity={0.18} />
-        </mesh>
-        <mesh>
-          <cylinderGeometry args={[0.35, 0.35, 1.35, 12]} />
-          <meshBasicMaterial color="#60a5fa" wireframe transparent opacity={0.1} />
-        </mesh>
-      </group>
-    </group>
-  );
-}
-
-const MemoizedBattery = React.memo(Battery);
 
 // Helper to map Turbine part IDs to their initial local coordinates in the GLB
 const getTurbinePartLocalPos = (id) => {
@@ -1955,12 +1493,9 @@ function SpatialScene({
     }
   }, [twoHandsFist, handDetected, trackingMode]);
 
-  const partsData = activeModel === 'fridge' 
-    ? FRIDGE_PARTS 
-    : (activeModel === 'battery' ? BATTERY_PARTS : customTurbineParts);
+  const partsData = customTurbineParts;
 
   const getExplodedPosition = useCallback((id, pos) => {
-    const [x, y, z] = pos;
     if (activeModel === 'turbine') {
       let localX = 0;
       let localY = 0;
@@ -2003,33 +1538,11 @@ function SpatialScene({
       return [globalX, globalY, globalZ];
     }
     
-    if (activeModel === 'battery') {
-      if (id === '01') return [x, y + explode * 0.5, z];
-      if (id === '02') return [x, y - explode * 0.5, z];
-      if (id === '03') return [x, y, z + explode * 0.4];
-      if (id === '04') return [x, y, z - explode * 0.4];
-      if (id === '05') return [x + explode * 0.45, y, z];
-      if (id === '06') return [x, y + explode * 0.25, z + explode * 0.15];
-      if (id === '07') return [x, y + explode * 0.35, z + explode * 0.3];
-      if (id === '08') return [x + explode * 0.2, y + explode * 0.35, z + explode * 0.1];
-    }
-    
-    if (activeModel === 'fridge') {
-      if (id === '01') return [x, y, z + explode * 0.42];
-      if (id === '02') return [x, y, z + explode * 0.72];
-      if (id === '03') return [x, y - explode * 0.35, z - explode * 0.28];
-      if (id === '04') return [x - explode * 0.35, y, z + explode * 0.45];
-      if (id === '05') return [x, y + explode * 0.3, z + explode * 0.2];
-      if (id === '06') return [x, y, z + explode * 0.35];
-      if (id === '07') return [x + explode * 0.35, y, z + explode * 0.1];
-      if (id === '08') return [x, y, z - explode * 0.38];
-    }
-    
     return pos;
   }, [activeModel, explode]);
 
 
-  const gridY = activeModel === 'fridge' ? -1.005 : (activeModel === 'battery' ? -0.905 : -0.605);
+  const gridY = -0.605;
 
   const ambientIntensity = focusMode ? 1.0 : 0.75;
   const hemisphereIntensity = focusMode ? 1.1 : 0.85;
@@ -2086,19 +1599,13 @@ function SpatialScene({
       >
         {/* Render selected model inside a group that has raycasting disabled */}
         <group ref={modelGroupRef}>
-          {activeModel === 'fridge' ? (
-            <MemoizedRefrigerator explode={explode} />
-          ) : activeModel === 'battery' ? (
-            <MemoizedBattery explode={explode} />
-          ) : (
-            <MemoizedTurbine 
-              explode={explode} 
-              turbineRef={turbineRef} 
-              configMode={configMode}
-              selectedMeshIdx={selectedMeshIdx}
-              hoveredMeshIdx={hoveredMeshIdx}
-            />
-          )}
+          <MemoizedTurbine
+            explode={explode}
+            turbineRef={turbineRef}
+            configMode={configMode}
+            selectedMeshIdx={selectedMeshIdx}
+            hoveredMeshIdx={hoveredMeshIdx}
+          />
         </group>
 
         {/* Render respective tag nodes */}
@@ -2416,7 +1923,7 @@ const Sparkline = ({ color = '#00f0ff', points = [10, 25, 15, 30, 20, 35, 15, 40
 
 export default function SpatialUI() {
   const navigate = useNavigate();
-  const [activeModel, setActiveModel] = useState('fridge'); // 'fridge', 'battery', 'turbine'
+  const activeModel = 'turbine';
   const [explodeAmount, setExplodeAmount] = useState(0.0);
   
   // High-fidelity active sub-component selection state (defaults to '01')
@@ -2615,21 +2122,11 @@ export default function SpatialUI() {
     }
   };
 
-  // Reset selected part when switching models
-  React.useEffect(() => {
-    setSelectedPartId('01');
-    setMeshList([]);
-    setSelectedMeshIdx(-1);
-    setHoveredMeshIdx(-1);
-  }, [activeModel]);
-
   const handleBack = () => {
     navigate('/projects');
   };
 
-  const partsData = activeModel === 'fridge' 
-    ? FRIDGE_PARTS 
-    : (activeModel === 'battery' ? BATTERY_PARTS : customTurbineParts);
+  const partsData = customTurbineParts;
 
   const filteredParts = Object.entries(partsData).filter(([id, item]) => 
     item.name.toLowerCase().includes(searchTerm.toLowerCase()) || id.includes(searchTerm)
@@ -3394,50 +2891,36 @@ export default function SpatialUI() {
               <HudCard>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <h3>展示对象库</h3>
-                  {activeModel === 'turbine' && (
-                    <button 
-                      onClick={() => setConfigMode(true)}
-                      style={{
-                        background: 'rgba(37, 99, 235, 0.08)',
-                        border: '1px solid rgba(37, 99, 235, 0.25)',
-                        color: '#2563eb',
-                        fontSize: '0.62rem',
-                        padding: '0.18rem 0.45rem',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        fontWeight: 600,
-                        transition: 'all 0.2s'
-                      }}
-                      onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(37, 99, 235, 0.15)' }}
-                      onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(37, 99, 235, 0.08)' }}
-                    >
-                      🔧 标签配置
-                    </button>
-                  )}
+                  <button
+                    onClick={() => setConfigMode(true)}
+                    style={{
+                      background: 'rgba(37, 99, 235, 0.08)',
+                      border: '1px solid rgba(37, 99, 235, 0.25)',
+                      color: '#2563eb',
+                      fontSize: '0.62rem',
+                      padding: '0.18rem 0.45rem',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontWeight: 600,
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(37, 99, 235, 0.15)' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(37, 99, 235, 0.08)' }}
+                  >
+                    🔧 标签配置
+                  </button>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginTop: '0.3rem' }}>
-                  {[
-                    { id: 'turbine', label: '风力发电机', desc: 'MW 级双馈风力发电机', icon: '⚙️' },
-                    { id: 'battery', label: '电池能量包', desc: '固态聚合物电解质电池', icon: '🔋' },
-                    { id: 'fridge', label: '智能冷藏柜', desc: '全息智能温控冷藏机', icon: '❄️' }
-                  ].map(item => (
-                    <ObjectItem
-                      key={item.id}
-                      $active={activeModel === item.id}
-                      onClick={() => {
-                        setActiveModel(item.id);
-                      }}
-                    >
-                      <div className="label-group">
-                        <span style={{ fontSize: '1rem' }}>{item.icon}</span>
-                        <div style={{ display: 'flex', flexDirection: 'column' }}>
-                          <span style={{ fontWeight: 600 }}>{item.label}</span>
-                          <span style={{ fontSize: '0.6rem', color: '#64748b', marginTop: '1px' }}>{item.desc}</span>
-                        </div>
+                  <ObjectItem $active>
+                    <div className="label-group">
+                      <span style={{ fontSize: '1rem' }}>⚙️</span>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ fontWeight: 600 }}>风力发电机</span>
+                        <span style={{ fontSize: '0.6rem', color: '#64748b', marginTop: '1px' }}>MW 级双馈风力发电机</span>
                       </div>
-                      <div className="status-indicator" />
-                    </ObjectItem>
-                  ))}
+                    </div>
+                    <div className="status-indicator" />
+                  </ObjectItem>
                 </div>
               </HudCard>
 

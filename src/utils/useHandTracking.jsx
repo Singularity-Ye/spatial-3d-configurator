@@ -400,13 +400,20 @@ export function HandTrackingProvider({ children }) {
       setTwoHandsDetected(!!h2_data);
 
       if (h1_data) {
-        // Smooth the cursor position using first-order low-pass filter (Exponential Moving Average)
-        const filterFactor = h1_data.isPinching ? 0.14 : 0.24;
-
         if (isFirstFrameRef.current) {
           smoothedCursorRef.current = { x: h1_data.cursor.x, y: h1_data.cursor.y };
           isFirstFrameRef.current = false;
         } else {
+          // Keep small landmark jitter filtered, but let the cursor catch up immediately
+          // when the fingertip moves farther away. A fixed low factor caused the visible
+          // pointer to trail the actual index tip by hundreds of pixels during motion.
+          const cursorDelta = Math.hypot(
+            h1_data.cursor.x - smoothedCursorRef.current.x,
+            h1_data.cursor.y - smoothedCursorRef.current.y
+          );
+          const baseFactor = h1_data.isPinching ? 0.42 : 0.58;
+          const filterFactor = Math.min(1, baseFactor + cursorDelta * 2.4);
+
           smoothedCursorRef.current.x += (h1_data.cursor.x - smoothedCursorRef.current.x) * filterFactor;
           smoothedCursorRef.current.y += (h1_data.cursor.y - smoothedCursorRef.current.y) * filterFactor;
         }
